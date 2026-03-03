@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { improveText } from '../services/ai'
 
 const CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack']
 
@@ -27,6 +28,23 @@ function BackIcon() {
   )
 }
 
+function SparkleButton({ loading, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title="Fix with AI"
+      className="shrink-0 p-1.5 rounded-lg text-stone-400 hover:text-[#e85d04] hover:bg-orange-50 transition-colors disabled:opacity-40"
+      disabled={loading}
+    >
+      {loading
+        ? <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+        : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.683a1 1 0 01.633.633l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01.633-.633l2.051-.683a1 1 0 000-1.898l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684zM13.949 13.684a1 1 0 00-1.898 0l-.184.551a1 1 0 01-.632.633l-.551.183a1 1 0 000 1.898l.551.183a1 1 0 01.633.633l.183.551a1 1 0 001.898 0l.184-.551a1 1 0 01.632-.633l.551-.183a1 1 0 000-1.898l-.551-.184a1 1 0 01-.633-.632l-.183-.551z"/></svg>
+      }
+    </button>
+  )
+}
+
 const empty = {
   title: '',
   description: '',
@@ -45,6 +63,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
 
   const [form, setForm] = useState(empty)
   const [error, setError] = useState('')
+  const [aiLoading, setAiLoading] = useState({})
 
   useEffect(() => {
     if (isEditing && getRecipe) {
@@ -58,6 +77,22 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
       }
     }
   }, [id, isEditing, getRecipe])
+
+  async function fixWithAI(key, text, type) {
+    if (!text.trim()) return
+    setAiLoading(prev => ({ ...prev, [key]: true }))
+    try {
+      const improved = await improveText(text, type)
+      if (key === 'description') {
+        setField('description', improved)
+      } else if (key.startsWith('ing-')) {
+        setListItem('ingredients', Number(key.slice(4)), improved)
+      } else if (key.startsWith('step-')) {
+        setListItem('steps', Number(key.slice(5)), improved)
+      }
+    } catch { /* silently ignore */ }
+    finally { setAiLoading(prev => ({ ...prev, [key]: false })) }
+  }
 
   function setField(field, value) {
     setForm(f => ({ ...f, [field]: value }))
@@ -147,13 +182,21 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
         {/* Description */}
         <div>
           <label className={labelClass}>Description</label>
-          <textarea
-            placeholder="A short description of the dish..."
-            value={form.description}
-            onChange={e => setField('description', e.target.value)}
-            rows={3}
-            className={`${inputClass} resize-none`}
-          />
+          <div className="relative">
+            <textarea
+              placeholder="A short description of the dish..."
+              value={form.description}
+              onChange={e => setField('description', e.target.value)}
+              rows={3}
+              className={`${inputClass} resize-none pr-10`}
+            />
+            <div className="absolute bottom-2 right-2">
+              <SparkleButton
+                loading={!!aiLoading['description']}
+                onClick={() => fixWithAI('description', form.description, 'description')}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Image URL */}
@@ -227,6 +270,10 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
                   onChange={e => setListItem('ingredients', i, e.target.value)}
                   className={inputClass}
                 />
+                <SparkleButton
+                  loading={!!aiLoading[`ing-${i}`]}
+                  onClick={() => fixWithAI(`ing-${i}`, item, 'ingredient')}
+                />
                 {form.ingredients.length > 1 && (
                   <button
                     type="button"
@@ -265,6 +312,10 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
                   onChange={e => setListItem('steps', i, e.target.value)}
                   rows={2}
                   className={`${inputClass} resize-none flex-1`}
+                />
+                <SparkleButton
+                  loading={!!aiLoading[`step-${i}`]}
+                  onClick={() => fixWithAI(`step-${i}`, step, 'step')}
                 />
                 {form.steps.length > 1 && (
                   <button
