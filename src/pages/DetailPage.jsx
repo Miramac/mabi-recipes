@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 
 const categoryColors = {
@@ -33,10 +34,47 @@ function TrashIcon() {
   )
 }
 
+function CheckIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+    </svg>
+  )
+}
+
 export default function DetailPage({ getRecipe, deleteRecipe }) {
   const { id } = useParams()
   const navigate = useNavigate()
   const recipe = getRecipe(id)
+
+  const [checkedIngredients, setCheckedIngredients] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem(`checked-ing-${id}`)
+      return stored ? new Set(JSON.parse(stored)) : new Set()
+    } catch { return new Set() }
+  })
+  const [checkedSteps, setCheckedSteps] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem(`checked-steps-${id}`)
+      return stored ? new Set(JSON.parse(stored)) : new Set()
+    } catch { return new Set() }
+  })
+
+  useEffect(() => {
+    sessionStorage.setItem(`checked-ing-${id}`, JSON.stringify([...checkedIngredients]))
+  }, [checkedIngredients, id])
+
+  useEffect(() => {
+    sessionStorage.setItem(`checked-steps-${id}`, JSON.stringify([...checkedSteps]))
+  }, [checkedSteps, id])
+
+  function toggle(setter, i) {
+    setter(prev => {
+      const next = new Set(prev)
+      next.has(i) ? next.delete(i) : next.add(i)
+      return next
+    })
+  }
 
   if (!recipe) {
     return (
@@ -122,28 +160,58 @@ export default function DetailPage({ getRecipe, deleteRecipe }) {
         {/* Ingredients */}
         <section className="mb-8">
           <h2 className="text-lg font-bold text-stone-800 mb-3">Ingredients</h2>
-          <ul className="space-y-2">
-            {recipe.ingredients.map((item, i) => (
-              <li key={i} className="flex items-start gap-3">
-                <span className="mt-1.5 w-2 h-2 rounded-full bg-[#e85d04] shrink-0" />
-                <span className="text-stone-700 text-sm leading-relaxed">{item}</span>
-              </li>
-            ))}
+          <ul className="space-y-1">
+            {recipe.ingredients.map((item, i) => {
+              const checked = checkedIngredients.has(i)
+              return (
+                <li key={i}>
+                  <button
+                    onClick={() => toggle(setCheckedIngredients, i)}
+                    className="w-full flex items-center gap-3 py-2 text-left rounded-xl active:bg-stone-50 transition-colors"
+                  >
+                    <span className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                      checked ? 'bg-[#e85d04] border-[#e85d04] text-white' : 'border-stone-300'
+                    }`}>
+                      {checked && <CheckIcon />}
+                    </span>
+                    <span className={`text-sm leading-relaxed transition-colors ${
+                      checked ? 'line-through text-stone-400' : 'text-stone-700'
+                    }`}>
+                      {item}
+                    </span>
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         </section>
 
         {/* Steps */}
         <section>
           <h2 className="text-lg font-bold text-stone-800 mb-3">Instructions</h2>
-          <ol className="space-y-4">
-            {recipe.steps.map((step, i) => (
-              <li key={i} className="flex items-start gap-4">
-                <span className="shrink-0 w-7 h-7 rounded-full bg-[#e85d04] text-white text-xs font-bold flex items-center justify-center mt-0.5">
-                  {i + 1}
-                </span>
-                <p className="text-stone-700 text-sm leading-relaxed pt-1">{step}</p>
-              </li>
-            ))}
+          <ol className="space-y-2">
+            {recipe.steps.map((step, i) => {
+              const checked = checkedSteps.has(i)
+              return (
+                <li key={i}>
+                  <button
+                    onClick={() => toggle(setCheckedSteps, i)}
+                    className="w-full flex items-start gap-4 py-2 text-left rounded-xl active:bg-stone-50 transition-colors"
+                  >
+                    <span className={`shrink-0 w-7 h-7 rounded-full text-white text-xs font-bold flex items-center justify-center mt-0.5 transition-colors ${
+                      checked ? 'bg-green-500' : 'bg-[#e85d04]'
+                    }`}>
+                      {checked ? <CheckIcon /> : i + 1}
+                    </span>
+                    <p className={`text-sm leading-relaxed pt-1 transition-colors ${
+                      checked ? 'line-through text-stone-400' : 'text-stone-700'
+                    }`}>
+                      {step}
+                    </p>
+                  </button>
+                </li>
+              )
+            })}
           </ol>
         </section>
       </div>
