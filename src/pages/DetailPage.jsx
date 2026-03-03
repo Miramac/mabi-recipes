@@ -1,0 +1,152 @@
+import { useParams, useNavigate, Link } from 'react-router-dom'
+
+const categoryColors = {
+  Breakfast: 'bg-amber-100 text-amber-700',
+  Lunch:     'bg-green-100 text-green-700',
+  Dinner:    'bg-blue-100 text-blue-700',
+  Dessert:   'bg-pink-100 text-pink-700',
+  Snack:     'bg-purple-100 text-purple-700',
+}
+
+function BackIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+      <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
+    </svg>
+  )
+}
+
+function EditIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+      <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
+      <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" />
+    </svg>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+      <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
+    </svg>
+  )
+}
+
+export default function DetailPage({ getRecipe, deleteRecipe }) {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const recipe = getRecipe(id)
+
+  if (!recipe) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+        <p className="text-4xl mb-3">😕</p>
+        <p className="text-lg font-semibold text-stone-700">Recipe not found</p>
+        <Link to="/" className="mt-4 inline-block text-[#e85d04] font-medium text-sm">← Back to recipes</Link>
+      </div>
+    )
+  }
+
+  const categoryClass = categoryColors[recipe.category] || 'bg-stone-100 text-stone-600'
+  const timeLabel = recipe.time < 60
+    ? `${recipe.time} min`
+    : `${Math.floor(recipe.time / 60)}h ${recipe.time % 60 ? `${recipe.time % 60}m` : ''}`
+
+  function handleDelete() {
+    if (window.confirm(`Delete "${recipe.title}"?`)) {
+      deleteRecipe(id)
+      navigate('/')
+    }
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      {/* Hero image */}
+      <div className="relative">
+        <div className="aspect-[16/9] md:aspect-[2/1] overflow-hidden bg-stone-100">
+          <img
+            src={recipe.image}
+            alt={recipe.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        {/* Back button overlay */}
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-sm hover:bg-white transition-colors"
+          aria-label="Go back"
+        >
+          <BackIcon />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="px-4 py-6">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <h1 className="text-2xl font-bold text-stone-800 leading-tight">{recipe.title}</h1>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              to={`/edit/${recipe.id}`}
+              className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-full transition-colors"
+            >
+              <EditIcon />
+              Edit
+            </Link>
+            <button
+              onClick={handleDelete}
+              className="flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full transition-colors"
+            >
+              <TrashIcon />
+            </button>
+          </div>
+        </div>
+
+        {/* Meta pills */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <span className={`text-xs font-medium px-3 py-1 rounded-full ${categoryClass}`}>
+            {recipe.category}
+          </span>
+          <span className="text-xs font-medium px-3 py-1 rounded-full bg-stone-100 text-stone-600">
+            ⏱ {timeLabel}
+          </span>
+          <span className="text-xs font-medium px-3 py-1 rounded-full bg-stone-100 text-stone-600">
+            🍽 {recipe.servings} servings
+          </span>
+        </div>
+
+        {/* Description */}
+        <p className="text-stone-600 leading-relaxed mb-8">{recipe.description}</p>
+
+        {/* Ingredients */}
+        <section className="mb-8">
+          <h2 className="text-lg font-bold text-stone-800 mb-3">Ingredients</h2>
+          <ul className="space-y-2">
+            {recipe.ingredients.map((item, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span className="mt-1.5 w-2 h-2 rounded-full bg-[#e85d04] shrink-0" />
+                <span className="text-stone-700 text-sm leading-relaxed">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Steps */}
+        <section>
+          <h2 className="text-lg font-bold text-stone-800 mb-3">Instructions</h2>
+          <ol className="space-y-4">
+            {recipe.steps.map((step, i) => (
+              <li key={i} className="flex items-start gap-4">
+                <span className="shrink-0 w-7 h-7 rounded-full bg-[#e85d04] text-white text-xs font-bold flex items-center justify-center mt-0.5">
+                  {i + 1}
+                </span>
+                <p className="text-stone-700 text-sm leading-relaxed pt-1">{step}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      </div>
+    </div>
+  )
+}
