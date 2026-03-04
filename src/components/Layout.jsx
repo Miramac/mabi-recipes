@@ -25,7 +25,7 @@ function LangToggle({ lang, setLang }) {
       className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-full border border-stone-200 text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors"
       title={lang === 'en' ? 'Auf Deutsch wechseln' : 'Switch to English'}
     >
-      {lang === 'en' ? '🇩🇪 DE' : '🇬🇧 EN'}
+      {lang === 'en' ? '🇬🇧 EN' : '🇩🇪 DE' }
     </button>
   )
 }
@@ -90,8 +90,8 @@ export default function Layout({ lang, setLang }) {
             className="flex flex-col items-center gap-0.5 text-xs font-medium text-stone-400 hover:text-stone-700 transition-colors"
             title={lang === 'en' ? 'Auf Deutsch wechseln' : 'Switch to English'}
           >
-            <span className="text-xl">{lang === 'en' ? '🇩🇪' : '🇬🇧'}</span>
-            <span>{lang === 'en' ? 'DE' : 'EN'}</span>
+            <span className="text-xl">{lang === 'de' ? '🇩🇪' : '🇬🇧'}</span>
+            <span>{lang === 'de' ? 'DE' : 'EN'}</span>
           </button>
         </div>
       </nav>
