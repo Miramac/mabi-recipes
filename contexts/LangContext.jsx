@@ -9,8 +9,12 @@ export function LangProvider({ children }) {
 
   useEffect(() => {
     const stored = localStorage.getItem('mabi-lang')
-    if (stored) setLang(stored)
-    else if (process.env.NEXT_PUBLIC_DEFAULT_LANG) setLang(process.env.NEXT_PUBLIC_DEFAULT_LANG)
+    if (stored) {
+      setLang(stored)
+    } else {
+      const browserLang = navigator.language?.split('-')[0]
+      setLang(browserLang === 'de' ? 'de' : 'en')
+    }
   }, [])
 
   useEffect(() => {
