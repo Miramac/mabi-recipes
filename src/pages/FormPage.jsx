@@ -102,7 +102,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
     if (!text.trim()) return
     setAiLoading(prev => ({ ...prev, [key]: true }))
     try {
-      const improved = await improveText(text, type)
+      const improved = await improveText(text, type, lang)
       if (key === 'description') {
         setField('description', improved)
       } else if (key.startsWith('ing-')) {

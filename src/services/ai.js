@@ -37,10 +37,13 @@ async function callClaude({ system, prompt, maxTokens = 256 }) {
   return data.content[0].text.trim()
 }
 
-export async function improveText(text, type) {
+export async function improveText(text, type, lang = 'en') {
   console.log(`[AI] Improving ${type}:`, text)
+  const langInstruction = lang === 'de'
+    ? ' Respond in German.'
+    : ' Respond in English.'
   const result = await callClaude({
-    system: 'You are a helpful cooking assistant. Fix spelling, grammar and improve clarity. Return ONLY the corrected text, no explanation, no quotes, no extra formatting.',
+    system: `You are a helpful cooking assistant. Fix spelling, grammar and improve clarity. Return ONLY the corrected text, no explanation, no quotes, no extra formatting.${langInstruction}`,
     prompt: `${PROMPTS[type]}\n\n${text}`,
   })
   console.log('[AI] Result:', result)
