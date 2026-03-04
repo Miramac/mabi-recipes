@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { t, CATEGORY_KEYS } from '../i18n'
 
 const categoryColors = {
   Breakfast: 'bg-amber-100 text-amber-700',
@@ -42,7 +43,7 @@ function CheckIcon() {
   )
 }
 
-export default function DetailPage({ getRecipe, deleteRecipe }) {
+export default function DetailPage({ getRecipe, deleteRecipe, lang }) {
   const { id } = useParams()
   const navigate = useNavigate()
   const recipe = getRecipe(id)
@@ -80,8 +81,8 @@ export default function DetailPage({ getRecipe, deleteRecipe }) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <p className="text-4xl mb-3">😕</p>
-        <p className="text-lg font-semibold text-stone-700">Recipe not found</p>
-        <Link to="/" className="mt-4 inline-block text-[#e85d04] font-medium text-sm">← Back to recipes</Link>
+        <p className="text-lg font-semibold text-stone-700">{t(lang, 'recipeNotFound')}</p>
+        <Link to="/" className="mt-4 inline-block text-[#e85d04] font-medium text-sm">{t(lang, 'backToRecipes')}</Link>
       </div>
     )
   }
@@ -92,7 +93,7 @@ export default function DetailPage({ getRecipe, deleteRecipe }) {
     : `${Math.floor(recipe.time / 60)}h ${recipe.time % 60 ? `${recipe.time % 60}m` : ''}`
 
   function handleDelete() {
-    if (window.confirm(`Delete "${recipe.title}"?`)) {
+    if (window.confirm(t(lang, 'deleteConfirm', recipe.title))) {
       deleteRecipe(id)
       navigate('/')
     }
@@ -130,7 +131,7 @@ export default function DetailPage({ getRecipe, deleteRecipe }) {
               className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-full transition-colors"
             >
               <EditIcon />
-              Edit
+              {t(lang, 'edit')}
             </Link>
             <button
               onClick={handleDelete}
@@ -144,13 +145,13 @@ export default function DetailPage({ getRecipe, deleteRecipe }) {
         {/* Meta pills */}
         <div className="flex flex-wrap gap-2 mb-4">
           <span className={`text-xs font-medium px-3 py-1 rounded-full ${categoryClass}`}>
-            {recipe.category}
+            {t(lang, CATEGORY_KEYS[recipe.category] ?? recipe.category)}
           </span>
           <span className="text-xs font-medium px-3 py-1 rounded-full bg-stone-100 text-stone-600">
             ⏱ {timeLabel}
           </span>
           <span className="text-xs font-medium px-3 py-1 rounded-full bg-stone-100 text-stone-600">
-            🍽 {recipe.servings} servings
+            🍽 {recipe.servings} {t(lang, 'servings')}
           </span>
         </div>
 
@@ -159,7 +160,7 @@ export default function DetailPage({ getRecipe, deleteRecipe }) {
 
         {/* Ingredients */}
         <section className="mb-8">
-          <h2 className="text-lg font-bold text-stone-800 mb-3">Ingredients</h2>
+          <h2 className="text-lg font-bold text-stone-800 mb-3">{t(lang, 'ingredients')}</h2>
           <ul className="space-y-1">
             {recipe.ingredients.map((item, i) => {
               const checked = checkedIngredients.has(i)
@@ -188,7 +189,7 @@ export default function DetailPage({ getRecipe, deleteRecipe }) {
 
         {/* Steps */}
         <section>
-          <h2 className="text-lg font-bold text-stone-800 mb-3">Instructions</h2>
+          <h2 className="text-lg font-bold text-stone-800 mb-3">{t(lang, 'instructions')}</h2>
           <ol className="space-y-2">
             {recipe.steps.map((step, i) => {
               const checked = checkedSteps.has(i)

@@ -47,10 +47,13 @@ export async function improveText(text, type) {
   return result
 }
 
-export async function generateRecipe(title) {
-  console.log('[AI] Generating recipe for:', title)
+export async function generateRecipe(title, lang = 'en') {
+  console.log('[AI] Generating recipe for:', title, `(lang: ${lang})`)
+  const langInstruction = lang === 'de'
+    ? ' Write all recipe content (description, ingredients, steps) in German.'
+    : ''
   const text = await callClaude({
-    system: 'You are a helpful cooking assistant. Return ONLY valid JSON, no markdown, no explanation.',
+    system: `You are a helpful cooking assistant. Return ONLY valid JSON, no markdown, no explanation.${langInstruction}`,
     prompt: `Generate a complete recipe for "${title}". Return JSON with exactly these keys:\n{"description":"...","category":"Breakfast|Lunch|Dinner|Dessert|Snack","time":30,"servings":4,"ingredients":["..."],"steps":["..."]}`,
     maxTokens: 1024,
   })

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { improveText, generateRecipe } from '../services/ai'
+import { t } from '../i18n'
 
 const CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack']
 
@@ -28,12 +29,12 @@ function BackIcon() {
   )
 }
 
-function SparkleButton({ loading, onClick }) {
+function SparkleButton({ loading, onClick, title }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      title="Fix with AI"
+      title={title}
       className="shrink-0 p-1.5 rounded-lg text-stone-400 hover:text-[#e85d04] hover:bg-orange-50 transition-colors disabled:opacity-40"
       disabled={loading}
     >
@@ -56,7 +57,7 @@ const empty = {
   steps: [''],
 }
 
-export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
+export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
   const { id } = useParams()
   const navigate = useNavigate()
   const isEditing = Boolean(id)
@@ -83,7 +84,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
     if (!form.title.trim()) return
     setGenerateLoading(true)
     try {
-      const recipe = await generateRecipe(form.title)
+      const recipe = await generateRecipe(form.title, lang)
       setForm(f => ({
         ...f,
         description: recipe.description ?? f.description,
@@ -137,16 +138,16 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
     e.preventDefault()
     setError('')
 
-    if (!form.title.trim()) return setError('Title is required.')
+    if (!form.title.trim()) return setError(t(lang, 'errorTitle'))
     if (!form.time || isNaN(Number(form.time)) || Number(form.time) <= 0)
-      return setError('Please enter a valid time in minutes.')
+      return setError(t(lang, 'errorTime'))
     if (!form.servings || isNaN(Number(form.servings)) || Number(form.servings) <= 0)
-      return setError('Please enter a valid number of servings.')
+      return setError(t(lang, 'errorServings'))
 
     const cleanIngredients = form.ingredients.filter(i => i.trim())
     const cleanSteps = form.steps.filter(s => s.trim())
-    if (cleanIngredients.length === 0) return setError('Add at least one ingredient.')
-    if (cleanSteps.length === 0) return setError('Add at least one step.')
+    if (cleanIngredients.length === 0) return setError(t(lang, 'errorIngredients'))
+    if (cleanSteps.length === 0) return setError(t(lang, 'errorSteps'))
 
     const data = {
       ...form,
@@ -181,17 +182,17 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
           <BackIcon />
         </button>
         <h1 className="text-2xl font-bold text-stone-800">
-          {isEditing ? 'Edit Recipe' : 'New Recipe'}
+          {isEditing ? t(lang, 'editRecipe') : t(lang, 'newRecipe')}
         </h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Title */}
         <div>
-          <label className={labelClass}>Title *</label>
+          <label className={labelClass}>{t(lang, 'labelTitle')}</label>
           <input
             type="text"
-            placeholder="e.g. Spaghetti Carbonara"
+            placeholder={t(lang, 'placeholderTitle')}
             value={form.title}
             onChange={e => setField('title', e.target.value)}
             className={inputClass}
@@ -207,17 +208,17 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
                 ? <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
                 : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.683a1 1 0 01.633.633l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01.633-.633l2.051-.683a1 1 0 000-1.898l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684zM13.949 13.684a1 1 0 00-1.898 0l-.184.551a1 1 0 01-.632.633l-.551.183a1 1 0 000 1.898l.551.183a1 1 0 01.633.633l.183.551a1 1 0 001.898 0l.184-.551a1 1 0 01.632-.633l.551-.183a1 1 0 000-1.898l-.551-.184a1 1 0 01-.633-.632l-.183-.551z"/></svg>
               }
-              {generateLoading ? 'Generating…' : 'Generate with AI'}
+              {generateLoading ? t(lang, 'generating') : t(lang, 'generateWithAI')}
             </button>
           )}
         </div>
 
         {/* Description */}
         <div>
-          <label className={labelClass}>Description</label>
+          <label className={labelClass}>{t(lang, 'labelDescription')}</label>
           <div className="relative">
             <textarea
-              placeholder="A short description of the dish..."
+              placeholder={t(lang, 'placeholderDescription')}
               value={form.description}
               onChange={e => setField('description', e.target.value)}
               rows={3}
@@ -227,6 +228,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
               <SparkleButton
                 loading={!!aiLoading['description']}
                 onClick={() => fixWithAI('description', form.description, 'description')}
+                title={t(lang, 'fixWithAI')}
               />
             </div>
           </div>
@@ -234,10 +236,10 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
 
         {/* Image URL */}
         <div>
-          <label className={labelClass}>Image URL</label>
+          <label className={labelClass}>{t(lang, 'labelImage')}</label>
           <input
             type="url"
-            placeholder="https://..."
+            placeholder={t(lang, 'placeholderImage')}
             value={form.image}
             onChange={e => setField('image', e.target.value)}
             className={inputClass}
@@ -257,7 +259,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
         {/* Category / Time / Servings row */}
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className={labelClass}>Category</label>
+            <label className={labelClass}>{t(lang, 'labelCategory')}</label>
             <select
               value={form.category}
               onChange={e => setField('category', e.target.value)}
@@ -267,10 +269,10 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
             </select>
           </div>
           <div>
-            <label className={labelClass}>Time (min) *</label>
+            <label className={labelClass}>{t(lang, 'labelTime')}</label>
             <input
               type="number"
-              placeholder="30"
+              placeholder={t(lang, 'placeholderTime')}
               min="1"
               value={form.time}
               onChange={e => setField('time', e.target.value)}
@@ -278,10 +280,10 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
             />
           </div>
           <div>
-            <label className={labelClass}>Servings *</label>
+            <label className={labelClass}>{t(lang, 'labelServings')}</label>
             <input
               type="number"
-              placeholder="4"
+              placeholder={t(lang, 'placeholderServings')}
               min="1"
               value={form.servings}
               onChange={e => setField('servings', e.target.value)}
@@ -292,7 +294,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
 
         {/* Ingredients */}
         <div>
-          <label className={labelClass}>Ingredients *</label>
+          <label className={labelClass}>{t(lang, 'labelIngredients')}</label>
           <div className="space-y-2">
             {form.ingredients.map((item, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -306,6 +308,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
                 <SparkleButton
                   loading={!!aiLoading[`ing-${i}`]}
                   onClick={() => fixWithAI(`ing-${i}`, item, 'ingredient')}
+                  title={t(lang, 'fixWithAI')}
                 />
                 {form.ingredients.length > 1 && (
                   <button
@@ -326,13 +329,13 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
             className="mt-2 flex items-center gap-1.5 text-sm font-medium text-[#e85d04] hover:text-[#d04e00] transition-colors"
           >
             <PlusIcon />
-            Add ingredient
+            {t(lang, 'addIngredient')}
           </button>
         </div>
 
         {/* Steps */}
         <div>
-          <label className={labelClass}>Instructions *</label>
+          <label className={labelClass}>{t(lang, 'labelInstructions')}</label>
           <div className="space-y-2">
             {form.steps.map((step, i) => (
               <div key={i} className="flex items-start gap-3">
@@ -349,6 +352,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
                 <SparkleButton
                   loading={!!aiLoading[`step-${i}`]}
                   onClick={() => fixWithAI(`step-${i}`, step, 'step')}
+                  title={t(lang, 'fixWithAI')}
                 />
                 {form.steps.length > 1 && (
                   <button
@@ -369,7 +373,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
             className="mt-2 flex items-center gap-1.5 text-sm font-medium text-[#e85d04] hover:text-[#d04e00] transition-colors"
           >
             <PlusIcon />
-            Add step
+            {t(lang, 'addStep')}
           </button>
         </div>
 
@@ -385,7 +389,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
           type="submit"
           className="w-full bg-[#e85d04] hover:bg-[#d04e00] text-white font-semibold py-3 rounded-xl transition-colors text-sm"
         >
-          {isEditing ? 'Save Changes' : 'Save Recipe'}
+          {isEditing ? t(lang, 'saveChanges') : t(lang, 'saveRecipe')}
         </button>
       </form>
     </div>

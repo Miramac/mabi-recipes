@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { t, CATEGORY_KEYS } from '../i18n'
 
 const categoryColors = {
   Breakfast: 'bg-amber-100 text-amber-700',
@@ -16,7 +17,7 @@ function ClockIcon() {
   )
 }
 
-export default function RecipeCard({ recipe }) {
+export default function RecipeCard({ recipe, lang }) {
   const categoryClass = categoryColors[recipe.category] || 'bg-stone-100 text-stone-600'
   const timeLabel = recipe.time < 60
     ? `${recipe.time} min`
@@ -41,7 +42,7 @@ export default function RecipeCard({ recipe }) {
             {recipe.title}
           </h2>
           <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${categoryClass}`}>
-            {recipe.category}
+            {t(lang, CATEGORY_KEYS[recipe.category] ?? recipe.category)}
           </span>
         </div>
         <p className="text-sm text-stone-500 line-clamp-2 leading-relaxed">
@@ -51,7 +52,7 @@ export default function RecipeCard({ recipe }) {
           <ClockIcon />
           <span>{timeLabel}</span>
           <span className="mx-1">·</span>
-          <span>{recipe.servings} servings</span>
+          <span>{recipe.servings} {t(lang, 'servings')}</span>
         </div>
       </div>
     </Link>

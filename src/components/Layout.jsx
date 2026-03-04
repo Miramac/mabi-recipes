@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
+import { t } from '../i18n'
 
 function HomeIcon() {
   return (
@@ -17,7 +18,19 @@ function PlusIcon() {
   )
 }
 
-export default function Layout() {
+function LangToggle({ lang, setLang }) {
+  return (
+    <button
+      onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
+      className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-full border border-stone-200 text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors"
+      title={lang === 'en' ? 'Auf Deutsch wechseln' : 'Switch to English'}
+    >
+      {lang === 'en' ? '🇩🇪 DE' : '🇬🇧 EN'}
+    </button>
+  )
+}
+
+export default function Layout({ lang, setLang }) {
   const navLinkClass = ({ isActive }) =>
     `flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ${
       isActive ? 'text-[#e85d04]' : 'text-stone-400 hover:text-stone-700'
@@ -29,9 +42,9 @@ export default function Layout() {
       <header className="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-stone-100 sticky top-0 z-10">
         <Link to="/" className="flex items-center gap-2">
           <span className="text-2xl">🍳</span>
-          <span className="text-xl font-bold text-stone-800 tracking-tight">Mabi Recipes</span>
+          <span className="text-xl font-bold text-stone-800 tracking-tight">{t(lang, 'appName')}</span>
         </Link>
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-4">
           <NavLink
             to="/"
             end
@@ -39,7 +52,7 @@ export default function Layout() {
               `text-sm font-medium transition-colors ${isActive ? 'text-[#e85d04]' : 'text-stone-500 hover:text-stone-800'}`
             }
           >
-            All Recipes
+            {t(lang, 'allRecipes')}
           </NavLink>
           <NavLink
             to="/add"
@@ -48,8 +61,9 @@ export default function Layout() {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
               <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
             </svg>
-            Add Recipe
+            {t(lang, 'addRecipe')}
           </NavLink>
+          <LangToggle lang={lang} setLang={setLang} />
         </nav>
       </header>
 
@@ -63,14 +77,22 @@ export default function Layout() {
         <div className="flex justify-around items-center h-16 px-4">
           <NavLink to="/" end className={navLinkClass}>
             <HomeIcon />
-            <span>Recipes</span>
+            <span>{t(lang, 'navRecipes')}</span>
           </NavLink>
           <NavLink to="/add" className={navLinkClass}>
             <div className="bg-[#e85d04] rounded-full p-2 -mt-6 shadow-lg ring-4 ring-[#fafaf9]">
               <PlusIcon />
             </div>
-            <span className="mt-1">Add</span>
+            <span className="mt-1">{t(lang, 'navAdd')}</span>
           </NavLink>
+          <button
+            onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
+            className="flex flex-col items-center gap-0.5 text-xs font-medium text-stone-400 hover:text-stone-700 transition-colors"
+            title={lang === 'en' ? 'Auf Deutsch wechseln' : 'Switch to English'}
+          >
+            <span className="text-xl">{lang === 'en' ? '🇩🇪' : '🇬🇧'}</span>
+            <span>{lang === 'en' ? 'DE' : 'EN'}</span>
+          </button>
         </div>
       </nav>
     </div>

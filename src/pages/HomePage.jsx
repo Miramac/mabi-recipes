@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import RecipeCard from '../components/RecipeCard'
+import { t, CATEGORY_KEYS } from '../i18n'
 
 const CATEGORIES = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack']
 
@@ -11,7 +12,7 @@ function SearchIcon() {
   )
 }
 
-export default function HomePage({ recipes }) {
+export default function HomePage({ recipes, lang }) {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
 
@@ -28,8 +29,8 @@ export default function HomePage({ recipes }) {
     <div className="max-w-5xl mx-auto px-4 py-6">
       {/* Hero */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-stone-800 mb-1">Your Recipes</h1>
-        <p className="text-stone-500 text-sm">{recipes.length} recipe{recipes.length !== 1 ? 's' : ''} saved</p>
+        <h1 className="text-3xl font-bold text-stone-800 mb-1">{t(lang, 'heroTitle')}</h1>
+        <p className="text-stone-500 text-sm">{t(lang, 'recipeCount', recipes.length)}</p>
       </div>
 
       {/* Search */}
@@ -39,7 +40,7 @@ export default function HomePage({ recipes }) {
         </div>
         <input
           type="search"
-          placeholder="Search recipes..."
+          placeholder={t(lang, 'searchPlaceholder')}
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="w-full pl-9 pr-4 py-3 bg-white border border-stone-200 rounded-xl text-sm text-stone-700 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#e85d04]/30 focus:border-[#e85d04]"
@@ -58,7 +59,7 @@ export default function HomePage({ recipes }) {
                 : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300'
             }`}
           >
-            {cat}
+            {t(lang, CATEGORY_KEYS[cat])}
           </button>
         ))}
       </div>
@@ -67,13 +68,13 @@ export default function HomePage({ recipes }) {
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-stone-400">
           <p className="text-4xl mb-3">🔍</p>
-          <p className="font-medium">No recipes found</p>
-          <p className="text-sm mt-1">Try a different search or category</p>
+          <p className="font-medium">{t(lang, 'noRecipesFound')}</p>
+          <p className="text-sm mt-1">{t(lang, 'noRecipesHint')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {filtered.map(recipe => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
+            <RecipeCard key={recipe.id} recipe={recipe} lang={lang} />
           ))}
         </div>
       )}
