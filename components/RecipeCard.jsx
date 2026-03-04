@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom'
-import { t, CATEGORY_KEYS } from '../i18n'
+'use client'
+
+import Link from 'next/link'
+import { t, CATEGORY_KEYS } from '../lib/i18n'
 
 const categoryColors = {
   Breakfast: 'bg-amber-100 text-amber-700',
@@ -24,7 +26,7 @@ export default function RecipeCard({ recipe, lang }) {
     : `${Math.floor(recipe.time / 60)}h ${recipe.time % 60 ? `${recipe.time % 60}m` : ''}`
   return (
     <Link
-      to={`/recipe/${recipe.id}`}
+      href={`/recipe/${recipe.id}`}
       className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-stone-100"
     >
       <div className="aspect-[4/3] overflow-hidden bg-stone-100">

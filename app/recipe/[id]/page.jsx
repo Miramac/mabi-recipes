@@ -1,6 +1,11 @@
+'use client'
+
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { t, CATEGORY_KEYS } from '../i18n'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
+import { t, CATEGORY_KEYS } from '../../../lib/i18n'
+import { useLang } from '../../../contexts/LangContext'
+import { useRecipes } from '../../../contexts/RecipesContext'
 
 const categoryColors = {
   Breakfast: 'bg-amber-100 text-amber-700',
@@ -43,18 +48,22 @@ function CheckIcon() {
   )
 }
 
-export default function DetailPage({ getRecipe, deleteRecipe, lang }) {
+export default function DetailPage() {
   const { id } = useParams()
-  const navigate = useNavigate()
+  const router = useRouter()
+  const { lang } = useLang()
+  const { getRecipe, deleteRecipe, loading } = useRecipes()
   const recipe = getRecipe(id)
 
   const [checkedIngredients, setCheckedIngredients] = useState(() => {
+    if (typeof window === 'undefined') return new Set()
     try {
       const stored = sessionStorage.getItem(`checked-ing-${id}`)
       return stored ? new Set(JSON.parse(stored)) : new Set()
     } catch { return new Set() }
   })
   const [checkedSteps, setCheckedSteps] = useState(() => {
+    if (typeof window === 'undefined') return new Set()
     try {
       const stored = sessionStorage.getItem(`checked-steps-${id}`)
       return stored ? new Set(JSON.parse(stored)) : new Set()
@@ -78,11 +87,12 @@ export default function DetailPage({ getRecipe, deleteRecipe, lang }) {
   }
 
   if (!recipe) {
+    if (loading) return <div className="max-w-2xl mx-auto px-4 py-16 text-center text-stone-400">Loading…</div>
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <p className="text-4xl mb-3">😕</p>
         <p className="text-lg font-semibold text-stone-700">{t(lang, 'recipeNotFound')}</p>
-        <Link to="/" className="mt-4 inline-block text-[#e85d04] font-medium text-sm">{t(lang, 'backToRecipes')}</Link>
+        <Link href="/" className="mt-4 inline-block text-[#e85d04] font-medium text-sm">{t(lang, 'backToRecipes')}</Link>
       </div>
     )
   }
@@ -92,30 +102,24 @@ export default function DetailPage({ getRecipe, deleteRecipe, lang }) {
     ? `${recipe.time} min`
     : `${Math.floor(recipe.time / 60)}h ${recipe.time % 60 ? `${recipe.time % 60}m` : ''}`
 
-  function handleDelete() {
+  async function handleDelete() {
     if (window.confirm(t(lang, 'deleteConfirm', recipe.title))) {
-      deleteRecipe(id)
-      navigate('/')
+      await deleteRecipe(id)
+      router.push('/')
     }
   }
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Hero image */}
       <div className="relative">
         <div className="aspect-[16/9] md:aspect-[2/1] overflow-hidden bg-stone-100">
           {recipe.image
-            ? <img
-                src={recipe.image}
-                alt={recipe.title}
-                className="w-full h-full object-cover"
-              />
+            ? <img src={recipe.image} alt={recipe.title} className="w-full h-full object-cover" />
             : <div className="w-full h-full flex items-center justify-center text-6xl text-stone-300">🍳</div>
           }
         </div>
-        {/* Back button overlay */}
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => router.back()}
           className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-sm hover:bg-white transition-colors"
           aria-label="Go back"
         >
@@ -123,14 +127,12 @@ export default function DetailPage({ getRecipe, deleteRecipe, lang }) {
         </button>
       </div>
 
-      {/* Content */}
       <div className="px-4 py-6">
-        {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-4">
           <h1 className="text-2xl font-bold text-stone-800 leading-tight">{recipe.title}</h1>
           <div className="flex items-center gap-2 shrink-0">
             <Link
-              to={`/edit/${recipe.id}`}
+              href={`/edit/${recipe.id}`}
               className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-full transition-colors"
             >
               <EditIcon />
@@ -145,7 +147,6 @@ export default function DetailPage({ getRecipe, deleteRecipe, lang }) {
           </div>
         </div>
 
-        {/* Meta pills */}
         <div className="flex flex-wrap gap-2 mb-4">
           <span className={`text-xs font-medium px-3 py-1 rounded-full ${categoryClass}`}>
             {t(lang, CATEGORY_KEYS[recipe.category] ?? recipe.category)}
@@ -158,10 +159,8 @@ export default function DetailPage({ getRecipe, deleteRecipe, lang }) {
           </span>
         </div>
 
-        {/* Description */}
         <p className="text-stone-600 leading-relaxed mb-8">{recipe.description}</p>
 
-        {/* Ingredients */}
         <section className="mb-8">
           <h2 className="text-lg font-bold text-stone-800 mb-3">{t(lang, 'ingredients')}</h2>
           <ul className="space-y-1">
@@ -190,7 +189,6 @@ export default function DetailPage({ getRecipe, deleteRecipe, lang }) {
           </ul>
         </section>
 
-        {/* Steps */}
         <section>
           <h2 className="text-lg font-bold text-stone-800 mb-3">{t(lang, 'instructions')}</h2>
           <ol className="space-y-2">

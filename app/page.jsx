@@ -1,6 +1,10 @@
+'use client'
+
 import { useState, useMemo } from 'react'
 import RecipeCard from '../components/RecipeCard'
-import { t, CATEGORY_KEYS } from '../i18n'
+import { t, CATEGORY_KEYS } from '../lib/i18n'
+import { useLang } from '../contexts/LangContext'
+import { useRecipes } from '../contexts/RecipesContext'
 
 const CATEGORIES = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack']
 
@@ -12,7 +16,9 @@ function SearchIcon() {
   )
 }
 
-export default function HomePage({ recipes, lang }) {
+export default function HomePage() {
+  const { lang } = useLang()
+  const { recipes } = useRecipes()
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
 
@@ -27,13 +33,11 @@ export default function HomePage({ recipes, lang }) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      {/* Hero */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-stone-800 mb-1">{t(lang, 'heroTitle')}</h1>
         <p className="text-stone-500 text-sm">{t(lang, 'recipeCount', recipes.length)}</p>
       </div>
 
-      {/* Search */}
       <div className="relative mb-4">
         <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
           <SearchIcon />
@@ -47,7 +51,6 @@ export default function HomePage({ recipes, lang }) {
         />
       </div>
 
-      {/* Category filter */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none">
         {CATEGORIES.map(cat => (
           <button
@@ -64,7 +67,6 @@ export default function HomePage({ recipes, lang }) {
         ))}
       </div>
 
-      {/* Grid */}
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-stone-400">
           <p className="text-4xl mb-3">🔍</p>

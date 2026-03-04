@@ -1,7 +1,11 @@
+'use client'
+
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { improveText, generateRecipe } from '../services/ai'
-import { t, CATEGORY_KEYS } from '../i18n'
+import { useParams, useRouter } from 'next/navigation'
+import { improveText, generateRecipe } from '../lib/ai'
+import { t, CATEGORY_KEYS } from '../lib/i18n'
+import { useLang } from '../contexts/LangContext'
+import { useRecipes } from '../contexts/RecipesContext'
 
 const CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack']
 
@@ -40,7 +44,7 @@ function SparkleButton({ loading, onClick, title }) {
     >
       {loading
         ? <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-        : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.683a1 1 0 01.633.633l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01.633-.633l2.051-.683a1 1 0 000-1.898l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684zM13.949 13.684a1 1 0 00-1.898 0l-.184.551a1 1 0 01-.632.633l-.551.183a1 1 0 000 1.898l.551.183a1 1 0 01.633.633l.183.551a1 1 0 001.898 0l.184-.551a1 1 0 01.632-.633l.551-.183a1 1 0 000-1.898l-.551-.184a1 1 0 01-.633-.632l-.183-.551z"/></svg>
+        : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.683a1 1 0 01.633.633l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01-.633-.633l-2.051-.683a1 1 0 000-1.898l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684zM13.949 13.684a1 1 0 00-1.898 0l-.184.551a1 1 0 01-.632.633l-.551.183a1 1 0 000 1.898l.551.183a1 1 0 01.633.633l.183.551a1 1 0 001.898 0l.184-.551a1 1 0 01.632-.633l.551-.183a1 1 0 000-1.898l-.551-.184a1 1 0 01-.633-.632l-.183-.551z"/></svg>
       }
     </button>
   )
@@ -57,9 +61,12 @@ const empty = {
   steps: [''],
 }
 
-export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
-  const { id } = useParams()
-  const navigate = useNavigate()
+export default function RecipeForm() {
+  const { lang } = useLang()
+  const { addRecipe, updateRecipe, getRecipe } = useRecipes()
+  const params = useParams()
+  const router = useRouter()
+  const id = params?.id
   const isEditing = Boolean(id)
 
   const [form, setForm] = useState({ ...empty, lang })
@@ -70,7 +77,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
   const [generateLoading, setGenerateLoading] = useState(false)
 
   useEffect(() => {
-    if (isEditing && getRecipe) {
+    if (isEditing) {
       const recipe = getRecipe(id)
       if (recipe) {
         const loaded = {
@@ -151,7 +158,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
     setForm(f => ({ ...f, [field]: f[field].filter((_, i) => i !== index) }))
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setError('')
 
@@ -175,11 +182,11 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
     }
 
     if (isEditing) {
-      updateRecipe(id, data)
-      navigate(`/recipe/${id}`)
+      await updateRecipe(id, data)
+      router.push(`/recipe/${id}`)
     } else {
-      const newId = addRecipe(data)
-      navigate(`/recipe/${newId}`)
+      const newId = await addRecipe(data)
+      router.push(`/recipe/${newId}`)
     }
   }
 
@@ -188,11 +195,10 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
-      {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button
           type="button"
-          onClick={() => navigate(-1)}
+          onClick={() => router.back()}
           className="p-2 rounded-full hover:bg-stone-100 transition-colors"
           aria-label="Go back"
         >
@@ -204,7 +210,6 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Title */}
         <div>
           <label className={labelClass}>{t(lang, 'labelTitle')}</label>
           <input
@@ -216,7 +221,6 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
           />
         </div>
 
-        {/* Description */}
         <div>
           <label className={labelClass}>{t(lang, 'labelDescription')}</label>
           <div className="relative">
@@ -237,7 +241,6 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
           </div>
         </div>
 
-        {/* Image URL */}
         <div>
           <label className={labelClass}>{t(lang, 'labelImage')}</label>
           <input
@@ -259,7 +262,6 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
           )}
         </div>
 
-        {/* Category / Time / Servings row */}
         <div className="grid grid-cols-3 gap-3">
           <div>
             <label className={labelClass}>{t(lang, 'labelCategory')}</label>
@@ -295,7 +297,6 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
           </div>
         </div>
 
-        {/* Ingredients */}
         <div>
           <label className={labelClass}>{t(lang, 'labelIngredients')}</label>
           <div className="space-y-2">
@@ -336,7 +337,6 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
           </button>
         </div>
 
-        {/* Steps */}
         <div>
           <label className={labelClass}>{t(lang, 'labelInstructions')}</label>
           <div className="space-y-2">
@@ -380,21 +380,18 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
           </button>
         </div>
 
-        {/* Form error */}
         {error && (
           <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
             {error}
           </div>
         )}
 
-        {/* AI error */}
         {aiError && (
           <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
             {aiError}
           </div>
         )}
 
-        {/* Actions */}
         <div className="flex flex-col gap-2">
           {!isEditing && (
             <button

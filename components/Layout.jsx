@@ -1,5 +1,9 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
-import { t } from '../i18n'
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useLang } from '../contexts/LangContext'
+import { t } from '../lib/i18n'
 
 function HomeIcon() {
   return (
@@ -18,73 +22,69 @@ function PlusIcon() {
   )
 }
 
-function LangToggle({ lang, setLang }) {
-  return (
-    <button
-      onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
-      className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-full border border-stone-200 text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors"
-      title={lang === 'en' ? 'Auf Deutsch wechseln' : 'Switch to English'}
-    >
-      {lang === 'en' ? '🇬🇧 EN' : '🇩🇪 DE' }
-    </button>
-  )
-}
+export default function Layout({ children }) {
+  const { lang, setLang } = useLang()
+  const pathname = usePathname()
 
-export default function Layout({ lang, setLang }) {
-  const navLinkClass = ({ isActive }) =>
-    `flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ${
+  const navLinkClass = (href, exact = false) => {
+    const isActive = exact ? pathname === href : pathname.startsWith(href)
+    return `flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ${
       isActive ? 'text-[#e85d04]' : 'text-stone-400 hover:text-stone-700'
     }`
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
       {/* Desktop top nav */}
       <header className="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-stone-100 sticky top-0 z-10">
-        <Link to="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <span className="text-2xl">🍳</span>
           <span className="text-xl font-bold text-stone-800 tracking-tight">{t(lang, 'appName')}</span>
         </Link>
         <nav className="flex items-center gap-4">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `text-sm font-medium transition-colors ${isActive ? 'text-[#e85d04]' : 'text-stone-500 hover:text-stone-800'}`
-            }
+          <Link
+            href="/"
+            className={`text-sm font-medium transition-colors ${pathname === '/' ? 'text-[#e85d04]' : 'text-stone-500 hover:text-stone-800'}`}
           >
             {t(lang, 'allRecipes')}
-          </NavLink>
-          <NavLink
-            to="/add"
+          </Link>
+          <Link
+            href="/add"
             className="flex items-center gap-1.5 bg-[#e85d04] hover:bg-[#d04e00] text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
               <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
             </svg>
             {t(lang, 'addRecipe')}
-          </NavLink>
-          <LangToggle lang={lang} setLang={setLang} />
+          </Link>
+          <button
+            onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
+            className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-full border border-stone-200 text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors"
+            title={lang === 'en' ? 'Auf Deutsch wechseln' : 'Switch to English'}
+          >
+            {lang === 'en' ? '🇬🇧 EN' : '🇩🇪 DE'}
+          </button>
         </nav>
       </header>
 
       {/* Page content */}
       <main className="flex-1 pb-20 md:pb-0">
-        <Outlet />
+        {children}
       </main>
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-stone-100 z-10">
         <div className="flex justify-around items-center h-16 px-4">
-          <NavLink to="/" end className={navLinkClass}>
+          <Link href="/" className={navLinkClass('/', true)}>
             <HomeIcon />
             <span>{t(lang, 'navRecipes')}</span>
-          </NavLink>
-          <NavLink to="/add" className={navLinkClass}>
+          </Link>
+          <Link href="/add" className={navLinkClass('/add')}>
             <div className="bg-[#e85d04] rounded-full p-2 -mt-6 shadow-lg ring-4 ring-[#fafaf9]">
               <PlusIcon />
             </div>
             <span className="mt-1">{t(lang, 'navAdd')}</span>
-          </NavLink>
+          </Link>
           <button
             onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
             className="flex flex-col items-center gap-0.5 text-xs font-medium text-stone-400 hover:text-stone-700 transition-colors"
