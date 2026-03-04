@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { improveText, generateRecipe } from '../services/ai'
-import { t } from '../i18n'
+import { t, CATEGORY_KEYS } from '../i18n'
 
 const CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack']
 
@@ -257,7 +257,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
               onChange={e => setField('category', e.target.value)}
               className={inputClass}
             >
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              {CATEGORIES.map(c => <option key={c} value={c}>{t(lang, CATEGORY_KEYS[c], c)}</option>)}
             </select>
           </div>
           <div>

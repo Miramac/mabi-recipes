@@ -22,19 +22,21 @@ export default function RecipeCard({ recipe, lang }) {
   const timeLabel = recipe.time < 60
     ? `${recipe.time} min`
     : `${Math.floor(recipe.time / 60)}h ${recipe.time % 60 ? `${recipe.time % 60}m` : ''}`
-
   return (
     <Link
       to={`/recipe/${recipe.id}`}
       className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-stone-100"
     >
       <div className="aspect-[4/3] overflow-hidden bg-stone-100">
-        <img
-          src={recipe.image}
-          alt={recipe.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
-        />
+        {recipe.image
+          ? <img
+              src={recipe.image}
+              alt={recipe.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+            />
+          : <div className="w-full h-full flex items-center justify-center text-4xl text-stone-300">🍳</div>
+        }
       </div>
       <div className="p-4 flex flex-col gap-2">
         <div className="flex items-start justify-between gap-2">

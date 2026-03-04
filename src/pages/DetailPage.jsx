@@ -104,11 +104,14 @@ export default function DetailPage({ getRecipe, deleteRecipe, lang }) {
       {/* Hero image */}
       <div className="relative">
         <div className="aspect-[16/9] md:aspect-[2/1] overflow-hidden bg-stone-100">
-          <img
-            src={recipe.image}
-            alt={recipe.title}
-            className="w-full h-full object-cover"
-          />
+          {recipe.image
+            ? <img
+                src={recipe.image}
+                alt={recipe.title}
+                className="w-full h-full object-cover"
+              />
+            : <div className="w-full h-full flex items-center justify-center text-6xl text-stone-300">🍳</div>
+          }
         </div>
         {/* Back button overlay */}
         <button
