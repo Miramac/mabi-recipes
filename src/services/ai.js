@@ -50,14 +50,18 @@ export async function improveText(text, type, lang = 'en') {
   return result
 }
 
-export async function generateRecipe(title, lang = 'en') {
+export async function generateRecipe(title, lang = 'en', existingIngredients = []) {
   console.log('[AI] Generating recipe for:', title, `(lang: ${lang})`)
   const langInstruction = lang === 'de'
-    ? ' Write all recipe content (description, ingredients, steps) in German.'
+    ? ' Write all recipe content (title, description, ingredients, steps) in German.'
+    : ''
+  const filledIngredients = existingIngredients.filter(i => i.trim())
+  const ingredientsHint = filledIngredients.length
+    ? `\nThe user already has these ingredients: ${filledIngredients.join(', ')}. Incorporate them if it makes sense.`
     : ''
   const text = await callClaude({
     system: `You are a helpful cooking assistant. Return ONLY valid JSON, no markdown, no explanation.${langInstruction}`,
-    prompt: `Generate a complete recipe for "${title}". Return JSON with exactly these keys:\n{"description":"...","category":"Breakfast|Lunch|Dinner|Dessert|Snack","time":30,"servings":4,"ingredients":["..."],"steps":["..."]}`,
+    prompt: `Generate a complete recipe for "${title}".${ingredientsHint}\nReturn JSON with exactly these keys:\n{"title":"...","description":"...","category":"Breakfast|Lunch|Dinner|Dessert|Snack","time":30,"servings":4,"ingredients":["..."],"steps":["..."]}`,
     maxTokens: 1024,
   })
   console.log('[AI] Generated:', text)

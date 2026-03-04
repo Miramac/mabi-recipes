@@ -63,6 +63,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
   const isEditing = Boolean(id)
 
   const [form, setForm] = useState(empty)
+  const [initialForm, setInitialForm] = useState(empty)
   const [error, setError] = useState('')
   const [aiLoading, setAiLoading] = useState({})
   const [generateLoading, setGenerateLoading] = useState(false)
@@ -71,22 +72,27 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
     if (isEditing && getRecipe) {
       const recipe = getRecipe(id)
       if (recipe) {
-        setForm({
+        const loaded = {
           ...recipe,
           time: String(recipe.time),
           servings: String(recipe.servings),
-        })
+        }
+        setForm(loaded)
+        setInitialForm(loaded)
       }
     }
   }, [id, isEditing, getRecipe])
+
+  const hasChanges = JSON.stringify(form) !== JSON.stringify(initialForm)
 
   async function handleGenerate() {
     if (!form.title.trim()) return
     setGenerateLoading(true)
     try {
-      const recipe = await generateRecipe(form.title, lang)
+      const recipe = await generateRecipe(form.title, lang, form.ingredients)
       setForm(f => ({
         ...f,
+        title: recipe.title ?? f.title,
         description: recipe.description ?? f.description,
         category: recipe.category ?? f.category,
         time: recipe.time != null ? String(recipe.time) : f.time,
@@ -197,20 +203,6 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
             onChange={e => setField('title', e.target.value)}
             className={inputClass}
           />
-          {!isEditing && (
-            <button
-              type="button"
-              onClick={handleGenerate}
-              disabled={!form.title.trim() || generateLoading}
-              className="mt-2 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-orange-50 text-[#e85d04] border border-orange-200 hover:bg-orange-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              {generateLoading
-                ? <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.683a1 1 0 01.633.633l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01.633-.633l2.051-.683a1 1 0 000-1.898l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684zM13.949 13.684a1 1 0 00-1.898 0l-.184.551a1 1 0 01-.632.633l-.551.183a1 1 0 000 1.898l.551.183a1 1 0 01.633.633l.183.551a1 1 0 001.898 0l.184-.551a1 1 0 01.632-.633l.551-.183a1 1 0 000-1.898l-.551-.184a1 1 0 01-.633-.632l-.183-.551z"/></svg>
-              }
-              {generateLoading ? t(lang, 'generating') : t(lang, 'generateWithAI')}
-            </button>
-          )}
         </div>
 
         {/* Description */}
@@ -384,13 +376,30 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
           </div>
         )}
 
-        {/* Submit */}
-        <button
-          type="submit"
-          className="w-full bg-[#e85d04] hover:bg-[#d04e00] text-white font-semibold py-3 rounded-xl transition-colors text-sm"
-        >
-          {isEditing ? t(lang, 'saveChanges') : t(lang, 'saveRecipe')}
-        </button>
+        {/* Actions */}
+        <div className="flex flex-col gap-2">
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={!form.title.trim() || generateLoading}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium bg-orange-50 text-[#e85d04] border border-orange-200 hover:bg-orange-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {generateLoading
+                ? <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.683a1 1 0 01.633.633l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01-.633-.633l-2.051-.683a1 1 0 000-1.898l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684zM13.949 13.684a1 1 0 00-1.898 0l-.184.551a1 1 0 01-.632.633l-.551.183a1 1 0 000 1.898l.551.183a1 1 0 01.633.633l.183.551a1 1 0 001.898 0l.184-.551a1 1 0 01.632-.633l.551-.183a1 1 0 000-1.898l-.551-.184a1 1 0 01-.633-.632l-.183-.551z"/></svg>
+              }
+              {generateLoading ? t(lang, 'generating') : t(lang, 'generateWithAI')}
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={!hasChanges}
+            className="w-full bg-[#e85d04] hover:bg-[#d04e00] text-white font-semibold py-3 rounded-xl transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {isEditing ? t(lang, 'saveChanges') : t(lang, 'saveRecipe')}
+          </button>
+        </div>
       </form>
     </div>
   )
