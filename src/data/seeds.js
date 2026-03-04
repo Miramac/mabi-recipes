@@ -26,6 +26,7 @@ export const seedRecipes = [
       'Pour egg mixture over pasta, adding pasta water a splash at a time, tossing quickly to create a creamy sauce.',
       'Serve immediately topped with extra cheese and black pepper.',
     ],
+    lang: 'en',
     createdAt: 1700000001000,
   },
   {
@@ -56,6 +57,7 @@ export const seedRecipes = [
       'Top with a poached egg, chili flakes, and everything bagel seasoning.',
       'Add microgreens if using and serve immediately.',
     ],
+    lang: 'en',
     createdAt: 1700000002000,
   },
   {
@@ -91,6 +93,7 @@ export const seedRecipes = [
       'Stir in cream and chicken. Simmer 5 min until chicken is warmed through.',
       'Season to taste, garnish with cilantro, serve with rice or naan.',
     ],
+    lang: 'en',
     createdAt: 1700000003000,
   },
   {
@@ -120,6 +123,7 @@ export const seedRecipes = [
       'Bake 10–12 min until edges are set but center still jiggles slightly.',
       'Run a knife around the edge, invert onto plates, and serve immediately with ice cream.',
     ],
+    lang: 'en',
     createdAt: 1700000004000,
   },
   {
@@ -150,6 +154,7 @@ export const seedRecipes = [
       'Top with the feta block (traditional style) or crumble it over.',
       'Sprinkle with extra oregano and serve with crusty bread.',
     ],
+    lang: 'en',
     createdAt: 1700000005000,
   },
   {
@@ -181,6 +186,7 @@ export const seedRecipes = [
       'Cook 1–2 min more until golden on the other side.',
       'Serve stacked with maple syrup and fresh fruit.',
     ],
+    lang: 'en',
     createdAt: 1700000006000,
   },
 ]

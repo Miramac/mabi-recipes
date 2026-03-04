@@ -62,8 +62,8 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
   const navigate = useNavigate()
   const isEditing = Boolean(id)
 
-  const [form, setForm] = useState(empty)
-  const [initialForm, setInitialForm] = useState(empty)
+  const [form, setForm] = useState({ ...empty, lang })
+  const [initialForm, setInitialForm] = useState({ ...empty, lang })
   const [error, setError] = useState('')
   const [aiLoading, setAiLoading] = useState({})
   const [generateLoading, setGenerateLoading] = useState(false)

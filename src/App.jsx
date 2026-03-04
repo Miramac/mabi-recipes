@@ -8,7 +8,7 @@ import FormPage from './pages/FormPage'
 
 export default function App() {
   const { recipes, addRecipe, updateRecipe, deleteRecipe, getRecipe } = useRecipes()
-  const [lang, setLang] = useState(() => localStorage.getItem('mabi-lang') || 'en')
+  const [lang, setLang] = useState(() => localStorage.getItem('mabi-lang') || import.meta.env.VITE_DEFAULT_LANG || 'en')
 
   useEffect(() => {
     localStorage.setItem('mabi-lang', lang)
