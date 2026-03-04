@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { improveText } from '../services/ai'
+import { improveText, generateRecipe } from '../services/ai'
 
 const CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack']
 
@@ -64,6 +64,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
   const [form, setForm] = useState(empty)
   const [error, setError] = useState('')
   const [aiLoading, setAiLoading] = useState({})
+  const [generateLoading, setGenerateLoading] = useState(false)
 
   useEffect(() => {
     if (isEditing && getRecipe) {
@@ -77,6 +78,24 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
       }
     }
   }, [id, isEditing, getRecipe])
+
+  async function handleGenerate() {
+    if (!form.title.trim()) return
+    setGenerateLoading(true)
+    try {
+      const recipe = await generateRecipe(form.title)
+      setForm(f => ({
+        ...f,
+        description: recipe.description ?? f.description,
+        category: recipe.category ?? f.category,
+        time: recipe.time != null ? String(recipe.time) : f.time,
+        servings: recipe.servings != null ? String(recipe.servings) : f.servings,
+        ingredients: recipe.ingredients?.length ? recipe.ingredients : f.ingredients,
+        steps: recipe.steps?.length ? recipe.steps : f.steps,
+      }))
+    } catch { /* silently ignore */ }
+    finally { setGenerateLoading(false) }
+  }
 
   async function fixWithAI(key, text, type) {
     if (!text.trim()) return
@@ -177,6 +196,20 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe }) {
             onChange={e => setField('title', e.target.value)}
             className={inputClass}
           />
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={!form.title.trim() || generateLoading}
+              className="mt-2 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-orange-50 text-[#e85d04] border border-orange-200 hover:bg-orange-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {generateLoading
+                ? <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.683a1 1 0 01.633.633l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01.633-.633l2.051-.683a1 1 0 000-1.898l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684zM13.949 13.684a1 1 0 00-1.898 0l-.184.551a1 1 0 01-.632.633l-.551.183a1 1 0 000 1.898l.551.183a1 1 0 01.633.633l.183.551a1 1 0 001.898 0l.184-.551a1 1 0 01.632-.633l.551-.183a1 1 0 000-1.898l-.551-.184a1 1 0 01-.633-.632l-.183-.551z"/></svg>
+              }
+              {generateLoading ? 'Generating…' : 'Generate with AI'}
+            </button>
+          )}
         </div>
 
         {/* Description */}
