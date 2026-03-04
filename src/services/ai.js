@@ -55,5 +55,6 @@ export async function generateRecipe(title) {
     maxTokens: 1024,
   })
   console.log('[AI] Generated:', text)
-  return JSON.parse(text)
+  const clean = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+  return JSON.parse(clean)
 }
