@@ -1,0 +1,18 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_DEFAULT_LANG: ${NEXT_PUBLIC_DEFAULT_LANG:-en}
+    ports:
+      - "3000:3000"
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      NODE_ENV: production
+    volumes:
+      - sqlite_data:/app/.sqlite
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:

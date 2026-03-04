@@ -1,0 +1,11 @@
+node_modules
+.next
+.sqlite
+.env
+.env.local
+.env*.local
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+.dockerignore
