@@ -30,7 +30,12 @@ async function callClaude({ system, prompt, maxTokens = 256 }) {
   if (!res.ok) {
     const body = await res.text()
     console.error(`[AI] Request failed ${res.status}:`, body)
-    throw new Error(`AI request failed: ${res.status}`)
+    let errorType = 'unknown'
+    try { errorType = JSON.parse(body).error?.type ?? 'unknown' } catch {}
+    const err = new Error(errorType)
+    err.aiType = errorType
+    err.status = res.status
+    throw err
   }
 
   const data = await res.json()

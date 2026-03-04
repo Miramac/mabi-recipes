@@ -4,7 +4,7 @@ import { useRecipes } from './hooks/useRecipes'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import DetailPage from './pages/DetailPage'
-import FormPage from './pages/FormPage'
+import FormPage from './pages/EditPage'
 
 export default function App() {
   const { recipes, addRecipe, updateRecipe, deleteRecipe, getRecipe } = useRecipes()

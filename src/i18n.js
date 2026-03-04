@@ -59,6 +59,10 @@ const translations = {
     errorServings: 'Please enter a valid number of servings.',
     errorIngredients: 'Add at least one ingredient.',
     errorSteps: 'Add at least one step.',
+    aiErrorOverloaded: 'AI is busy — please try again in a moment.',
+    aiErrorAuth: 'Invalid API key. Check your .env file.',
+    aiErrorNetwork: 'Network error. Check your connection.',
+    aiErrorGeneric: 'AI request failed. Please try again.',
   },
 
   de: {
@@ -121,6 +125,10 @@ const translations = {
     errorServings: 'Bitte gib eine gültige Portionenzahl ein.',
     errorIngredients: 'Füge mindestens eine Zutat hinzu.',
     errorSteps: 'Füge mindestens einen Schritt hinzu.',
+    aiErrorOverloaded: 'KI ist ausgelastet – bitte kurz warten und erneut versuchen.',
+    aiErrorAuth: 'Ungültiger API-Schlüssel. Prüfe deine .env-Datei.',
+    aiErrorNetwork: 'Netzwerkfehler. Prüfe deine Verbindung.',
+    aiErrorGeneric: 'KI-Anfrage fehlgeschlagen. Bitte erneut versuchen.',
   },
 }
 

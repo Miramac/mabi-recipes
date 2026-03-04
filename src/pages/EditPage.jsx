@@ -65,6 +65,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
   const [form, setForm] = useState({ ...empty, lang })
   const [initialForm, setInitialForm] = useState({ ...empty, lang })
   const [error, setError] = useState('')
+  const [aiError, setAiError] = useState('')
   const [aiLoading, setAiLoading] = useState({})
   const [generateLoading, setGenerateLoading] = useState(false)
 
@@ -85,9 +86,18 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
 
   const hasChanges = JSON.stringify(form) !== JSON.stringify(initialForm)
 
+  function aiErrKey(err) {
+    const type = err?.aiType
+    if (type === 'overloaded_error') return 'aiErrorOverloaded'
+    if (type === 'authentication_error' || err?.status === 401) return 'aiErrorAuth'
+    if (err instanceof TypeError) return 'aiErrorNetwork'
+    return 'aiErrorGeneric'
+  }
+
   async function handleGenerate() {
     if (!form.title.trim()) return
     setGenerateLoading(true)
+    setAiError('')
     try {
       const recipe = await generateRecipe(form.title, lang, form.ingredients)
       setForm(f => ({
@@ -100,13 +110,14 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
         ingredients: recipe.ingredients?.length ? recipe.ingredients : f.ingredients,
         steps: recipe.steps?.length ? recipe.steps : f.steps,
       }))
-    } catch { /* silently ignore */ }
+    } catch (err) { setAiError(t(lang, aiErrKey(err))) }
     finally { setGenerateLoading(false) }
   }
 
   async function fixWithAI(key, text, type) {
     if (!text.trim()) return
     setAiLoading(prev => ({ ...prev, [key]: true }))
+    setAiError('')
     try {
       const improved = await improveText(text, type, lang)
       if (key === 'description') {
@@ -116,7 +127,7 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
       } else if (key.startsWith('step-')) {
         setListItem('steps', Number(key.slice(5)), improved)
       }
-    } catch { /* silently ignore */ }
+    } catch (err) { setAiError(t(lang, aiErrKey(err))) }
     finally { setAiLoading(prev => ({ ...prev, [key]: false })) }
   }
 
@@ -369,10 +380,17 @@ export default function FormPage({ getRecipe, addRecipe, updateRecipe, lang }) {
           </button>
         </div>
 
-        {/* Error */}
+        {/* Form error */}
         {error && (
           <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
             {error}
+          </div>
+        )}
+
+        {/* AI error */}
+        {aiError && (
+          <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
+            {aiError}
           </div>
         )}
 
