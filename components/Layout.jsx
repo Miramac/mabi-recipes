@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useLang } from '../contexts/LangContext'
+import { useAuth } from '../contexts/AuthContext'
 import { t } from '../lib/i18n'
 
 function HomeIcon() {
@@ -24,6 +25,7 @@ function PlusIcon() {
 
 export default function Layout({ children }) {
   const { lang, setLang } = useLang()
+  const { user, signOut } = useAuth()
   const pathname = usePathname()
 
   const navLinkClass = (href, exact = false) => {
@@ -49,7 +51,7 @@ export default function Layout({ children }) {
             {t(lang, 'allRecipes')}
           </Link>
           <Link
-            href="/add"
+            href="/recipes/add"
             className="flex items-center gap-1.5 bg-[#e85d04] hover:bg-[#d04e00] text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
@@ -57,6 +59,26 @@ export default function Layout({ children }) {
             </svg>
             {t(lang, 'addRecipe')}
           </Link>
+          {user ? (
+            <>
+              <span className="text-sm text-stone-500">{user.name}</span>
+              <button
+                onClick={() => signOut()}
+                className="text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors"
+              >
+                {t(lang, 'logoutButton')}
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors">
+                {t(lang, 'loginTitle')}
+              </Link>
+              <Link href="/register" className="text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors">
+                {t(lang, 'registerTitle')}
+              </Link>
+            </>
+          )}
           <button
             onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
             className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-full border border-stone-200 text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors"
@@ -79,7 +101,7 @@ export default function Layout({ children }) {
             <HomeIcon />
             <span>{t(lang, 'navRecipes')}</span>
           </Link>
-          <Link href="/add" className={navLinkClass('/add')}>
+          <Link href="/recipes/add" className={navLinkClass('/recipes/add')}>
             <div className="bg-[#e85d04] rounded-full p-2 -mt-6 shadow-lg ring-4 ring-[#fafaf9]">
               <PlusIcon />
             </div>

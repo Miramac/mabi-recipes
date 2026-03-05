@@ -4,24 +4,10 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { t, CATEGORY_KEYS } from '../../../lib/i18n'
+import { categoryColors, formatTime, BackIcon } from '../../../lib/utils'
 import { useLang } from '../../../contexts/LangContext'
 import { useRecipes } from '../../../contexts/RecipesContext'
-
-const categoryColors = {
-  Breakfast: 'bg-amber-100 text-amber-700',
-  Lunch:     'bg-green-100 text-green-700',
-  Dinner:    'bg-blue-100 text-blue-700',
-  Dessert:   'bg-pink-100 text-pink-700',
-  Snack:     'bg-purple-100 text-purple-700',
-}
-
-function BackIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-      <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
-    </svg>
-  )
-}
+import { useAuth } from '../../../contexts/AuthContext'
 
 function EditIcon() {
   return (
@@ -53,6 +39,7 @@ export default function DetailPage() {
   const router = useRouter()
   const { lang } = useLang()
   const { getRecipe, deleteRecipe, loading } = useRecipes()
+  const { user } = useAuth()
   const recipe = getRecipe(id)
 
   const [checkedIngredients, setCheckedIngredients] = useState(() => {
@@ -98,9 +85,7 @@ export default function DetailPage() {
   }
 
   const categoryClass = categoryColors[recipe.category] || 'bg-stone-100 text-stone-600'
-  const timeLabel = recipe.time < 60
-    ? `${recipe.time} min`
-    : `${Math.floor(recipe.time / 60)}h ${recipe.time % 60 ? `${recipe.time % 60}m` : ''}`
+  const timeLabel = formatTime(recipe.time)
 
   async function handleDelete() {
     if (window.confirm(t(lang, 'deleteConfirm', recipe.title))) {
@@ -119,7 +104,7 @@ export default function DetailPage() {
           }
         </div>
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push('/')}
           className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-sm hover:bg-white transition-colors"
           aria-label="Go back"
         >
@@ -130,21 +115,23 @@ export default function DetailPage() {
       <div className="px-4 py-6">
         <div className="flex items-start justify-between gap-4 mb-4">
           <h1 className="text-2xl font-bold text-stone-800 leading-tight">{recipe.title}</h1>
-          <div className="flex items-center gap-2 shrink-0">
-            <Link
-              href={`/edit/${recipe.id}`}
-              className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-full transition-colors"
-            >
-              <EditIcon />
-              {t(lang, 'edit')}
-            </Link>
-            <button
-              onClick={handleDelete}
-              className="flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full transition-colors"
-            >
-              <TrashIcon />
-            </button>
-          </div>
+          {user && (
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href={`/recipes/${recipe.id}/edit`}
+                className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-full transition-colors"
+              >
+                <EditIcon />
+                {t(lang, 'edit')}
+              </Link>
+              <button
+                onClick={handleDelete}
+                className="flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full transition-colors"
+              >
+                <TrashIcon />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">
@@ -158,6 +145,14 @@ export default function DetailPage() {
             🍽 {recipe.servings} {t(lang, 'servings')}
           </span>
         </div>
+
+        {(recipe.createdBy || recipe.updatedBy) && (
+          <p className="text-xs text-stone-400 mb-4">
+            {recipe.updatedBy
+              ? t(lang, 'updatedBy', recipe.updatedBy, new Date(recipe.updatedAt).toLocaleDateString())
+              : t(lang, 'createdBy', recipe.createdBy)}
+          </p>
+        )}
 
         <p className="text-stone-600 leading-relaxed mb-8">{recipe.description}</p>
 

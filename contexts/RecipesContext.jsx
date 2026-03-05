@@ -7,12 +7,13 @@ const RecipesContext = createContext({})
 export function RecipesProvider({ children }) {
   const [recipes, setRecipes] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     fetch('/api/recipes')
       .then(r => r.json())
       .then(data => { setRecipes(data); setLoading(false) })
-      .catch(() => setLoading(false))
+      .catch(err => { setError(err); setLoading(false) })
   }, [])
 
   async function addRecipe(data) {
@@ -46,7 +47,7 @@ export function RecipesProvider({ children }) {
   }
 
   return (
-    <RecipesContext.Provider value={{ recipes, loading, addRecipe, updateRecipe, deleteRecipe, getRecipe }}>
+    <RecipesContext.Provider value={{ recipes, loading, error, addRecipe, updateRecipe, deleteRecipe, getRecipe }}>
       {children}
     </RecipesContext.Provider>
   )
