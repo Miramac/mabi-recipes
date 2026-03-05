@@ -11,25 +11,32 @@ class MockStatement {
 
   get(...args) {
     if (this._sql.includes('COUNT(*)')) return { n: mockRecords.size }
-    if (this._sql.includes('WHERE id = ?')) return mockRecords.get(args[0]) ?? null
+    if (this._sql.includes('WHERE id = ?')) {
+      const row = mockRecords.get(args[0]) ?? null
+      if (row && this._sql.includes('deletedAt IS NULL') && row.deletedAt) return null
+      return row
+    }
     return null
   }
 
   all() {
-    return [...mockRecords.values()].sort((a, b) => b.createdAt - a.createdAt)
+    return [...mockRecords.values()]
+      .filter((r) => !r.deletedAt)
+      .sort((a, b) => b.createdAt - a.createdAt)
   }
 
   run(...args) {
     if (this._sql.startsWith('INSERT')) {
       const [id, title, description, image, category, time, servings, ingredients, steps, lang, createdAt] = args
-      mockRecords.set(id, { id, title, description, image, category, time, servings, ingredients, steps, lang, createdAt })
+      mockRecords.set(id, { id, title, description, image, category, time, servings, ingredients, steps, lang, createdAt, deletedAt: null })
+    } else if (this._sql.includes('SET deletedAt')) {
+      const [deletedAt, id] = args
+      if (mockRecords.has(id)) mockRecords.set(id, { ...mockRecords.get(id), deletedAt })
     } else if (this._sql.startsWith('UPDATE')) {
       const [title, description, image, category, time, servings, ingredients, steps, lang, id] = args
       if (mockRecords.has(id)) {
         mockRecords.set(id, { ...mockRecords.get(id), title, description, image, category, time, servings, ingredients, steps, lang })
       }
-    } else if (this._sql.startsWith('DELETE')) {
-      mockRecords.delete(args[0])
     }
   }
 }
@@ -130,13 +137,20 @@ describe('update()', () => {
   })
 })
 
-describe('remove()', () => {
-  it('deletes the recipe', () => {
+describe('remove() — soft delete', () => {
+  it('makes the recipe invisible to getById', () => {
     const r = makeRecipe()
     insert({ ...r, ingredients: [], steps: [] })
     expect(getById(r.id)).not.toBeNull()
     remove(r.id)
     expect(getById(r.id)).toBeNull()
+  })
+
+  it('makes the recipe invisible to getAll', () => {
+    const r = makeRecipe()
+    insert({ ...r, ingredients: [], steps: [] })
+    remove(r.id)
+    expect(getAll().some((x) => x.id === r.id)).toBe(false)
   })
 
   it('does not throw when removing non-existent id', () => {
