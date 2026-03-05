@@ -9,7 +9,7 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
-    "migrate": "node --input-type=module -e \"import { auth } from './lib/auth.js'; const { runMigrations } = await import('better-auth/db'); await runMigrations(auth); console.log('Migration complete');\""
+    "migrate": "npx auth@latest migrate"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.1",
