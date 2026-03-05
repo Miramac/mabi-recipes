@@ -2,14 +2,7 @@
 
 import Link from 'next/link'
 import { t, CATEGORY_KEYS } from '../lib/i18n'
-
-const categoryColors = {
-  Breakfast: 'bg-amber-100 text-amber-700',
-  Lunch:     'bg-green-100 text-green-700',
-  Dinner:    'bg-blue-100 text-blue-700',
-  Dessert:   'bg-pink-100 text-pink-700',
-  Snack:     'bg-purple-100 text-purple-700',
-}
+import { categoryColors, formatTime } from '../lib/utils'
 
 function ClockIcon() {
   return (
@@ -21,9 +14,7 @@ function ClockIcon() {
 
 export default function RecipeCard({ recipe, lang }) {
   const categoryClass = categoryColors[recipe.category] || 'bg-stone-100 text-stone-600'
-  const timeLabel = recipe.time < 60
-    ? `${recipe.time} min`
-    : `${Math.floor(recipe.time / 60)}h ${recipe.time % 60 ? `${recipe.time % 60}m` : ''}`
+  const timeLabel = formatTime(recipe.time)
   return (
     <Link
       href={`/recipe/${recipe.id}`}

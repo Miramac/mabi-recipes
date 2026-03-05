@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { AI_MODEL, AI_API_VERSION } from '../../../../lib/aiConfig'
 
 export async function POST(request) {
   const { title, lang = 'en', existingIngredients = [] } = await request.json()
@@ -14,11 +15,11 @@ export async function POST(request) {
     method: 'POST',
     headers: {
       'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
+      'anthropic-version': AI_API_VERSION,
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
+      model: AI_MODEL,
       max_tokens: 1024,
       system: `You are a helpful cooking assistant. Return ONLY valid JSON, no markdown, no explanation.${langInstruction}`,
       messages: [{
@@ -38,5 +39,9 @@ export async function POST(request) {
   const data = await res.json()
   const text = data.content[0].text.trim()
   const clean = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
-  return NextResponse.json(JSON.parse(clean))
+  try {
+    return NextResponse.json(JSON.parse(clean))
+  } catch {
+    return NextResponse.json({ error: 'invalid_response' }, { status: 500 })
+  }
 }
