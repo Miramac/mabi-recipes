@@ -42,7 +42,7 @@ vi.mock('better-sqlite3', () => ({
 }))
 
 // Import after mock is set up (vi.mock is hoisted, so this is safe)
-const { getAll, getById, insert, update, remove } = await import('./db.js')
+const { getAll, getById, insert, update, remove } = await import('../lib/db.js')
 
 beforeEach(() => mockRecords.clear())
 

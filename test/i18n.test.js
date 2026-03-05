@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { t, CATEGORY_KEYS } from './i18n.js'
+import { t, CATEGORY_KEYS } from '../lib/i18n.js'
 
 describe('t()', () => {
   it('returns EN string', () => {

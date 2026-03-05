@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { improveText, generateRecipe } from './ai.js'
+import { improveText, generateRecipe } from '../lib/ai.js'
 
 function mockFetch(ok, body) {
   const json = vi.fn().mockResolvedValue(body)
