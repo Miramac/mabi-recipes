@@ -107,7 +107,7 @@ export default function RecipeForm() {
     setGenerateLoading(true)
     setAiError('')
     try {
-      const recipe = await generateRecipe(form.title, lang, form.ingredients)
+      const recipe = await generateRecipe(form.title, lang, form.ingredients.map(i => i.value))
       setForm(f => ({
         ...f,
         title: recipe.title ?? f.title,
