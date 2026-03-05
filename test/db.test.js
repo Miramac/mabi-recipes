@@ -27,15 +27,17 @@ class MockStatement {
 
   run(...args) {
     if (this._sql.startsWith('INSERT')) {
-      const [id, title, description, image, category, time, servings, ingredients, steps, lang, createdAt] = args
-      mockRecords.set(id, { id, title, description, image, category, time, servings, ingredients, steps, lang, createdAt, deletedAt: null })
+      // INSERT (id, title, description, image, category, time, servings, ingredients, steps, lang, createdAt, updatedAt, createdBy)
+      const [id, title, description, image, category, time, servings, ingredients, steps, lang, createdAt, updatedAt, createdBy] = args
+      mockRecords.set(id, { id, title, description, image, category, time, servings, ingredients, steps, lang, createdAt, updatedAt, createdBy, deletedAt: null })
     } else if (this._sql.includes('SET deletedAt')) {
       const [deletedAt, id] = args
       if (mockRecords.has(id)) mockRecords.set(id, { ...mockRecords.get(id), deletedAt })
     } else if (this._sql.startsWith('UPDATE')) {
-      const [title, description, image, category, time, servings, ingredients, steps, lang, id] = args
+      // UPDATE SET title=?, description=?, image=?, category=?, time=?, servings=?, ingredients=?, steps=?, lang=?, updatedAt=?, updatedBy=? WHERE id=?
+      const [title, description, image, category, time, servings, ingredients, steps, lang, updatedAt, updatedBy, id] = args
       if (mockRecords.has(id)) {
-        mockRecords.set(id, { ...mockRecords.get(id), title, description, image, category, time, servings, ingredients, steps, lang })
+        mockRecords.set(id, { ...mockRecords.get(id), title, description, image, category, time, servings, ingredients, steps, lang, updatedAt, updatedBy })
       }
     }
   }
@@ -44,6 +46,8 @@ class MockStatement {
 vi.mock('better-sqlite3', () => ({
   default: vi.fn(() => ({
     exec: vi.fn(),
+    pragma: vi.fn().mockReturnValue(0), // 0 = no migrations run yet; returning length skips all
+    transaction: vi.fn((fn) => fn),     // returns fn; caller does transaction(fn)()
     prepare: vi.fn((sql) => new MockStatement(sql)),
   })),
 }))

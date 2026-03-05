@@ -9,6 +9,13 @@ function mockFetch(ok, body) {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('improveText()', () => {
+  it('throws with aiType "unknown" on network failure', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
+    await expect(improveText('text', 'description')).rejects.toMatchObject({
+      message: 'Failed to fetch',
+    })
+  })
+
   it('returns result on success', async () => {
     vi.stubGlobal('fetch', mockFetch(true, { result: 'improved text' }))
     const result = await improveText('raw text', 'description', 'en')
@@ -40,6 +47,11 @@ describe('improveText()', () => {
 })
 
 describe('generateRecipe()', () => {
+  it('throws on network failure', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
+    await expect(generateRecipe('Pasta')).rejects.toThrow('Failed to fetch')
+  })
+
   it('returns parsed JSON on success', async () => {
     const recipe = { title: 'Pasta', ingredients: [], steps: [] }
     vi.stubGlobal('fetch', mockFetch(true, recipe))
