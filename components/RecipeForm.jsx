@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { improveText, generateRecipe } from '../lib/ai'
 import { t, CATEGORY_KEYS } from '../lib/i18n'
+import { BackIcon } from '../lib/utils'
 import { useLang } from '../contexts/LangContext'
 import { useRecipes } from '../contexts/RecipesContext'
 
@@ -25,14 +26,6 @@ function RemoveIcon() {
   )
 }
 
-function BackIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-      <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
-    </svg>
-  )
-}
-
 function SparkleButton({ loading, onClick, title }) {
   return (
     <button
@@ -50,15 +43,21 @@ function SparkleButton({ loading, onClick, title }) {
   )
 }
 
-const empty = {
-  title: '',
-  description: '',
-  image: '',
-  category: 'Dinner',
-  time: '',
-  servings: '',
-  ingredients: [''],
-  steps: [''],
+function makeItem(value = '') {
+  return { id: crypto.randomUUID(), value }
+}
+
+function emptyForm(lang) {
+  return { title: '', description: '', image: '', category: 'Dinner', time: '', servings: '', lang, ingredients: [makeItem()], steps: [makeItem()] }
+}
+
+function formEquals(a, b) {
+  const scalar = ['title', 'description', 'image', 'category', 'time', 'servings', 'lang']
+  for (const key of scalar) { if (a[key] !== b[key]) return false }
+  if (a.ingredients.length !== b.ingredients.length || a.steps.length !== b.steps.length) return false
+  for (let i = 0; i < a.ingredients.length; i++) { if (a.ingredients[i].value !== b.ingredients[i].value) return false }
+  for (let i = 0; i < a.steps.length; i++) { if (a.steps[i].value !== b.steps[i].value) return false }
+  return true
 }
 
 export default function RecipeForm() {
@@ -69,8 +68,8 @@ export default function RecipeForm() {
   const id = params?.id
   const isEditing = Boolean(id)
 
-  const [form, setForm] = useState({ ...empty, lang })
-  const [initialForm, setInitialForm] = useState({ ...empty, lang })
+  const [form, setForm] = useState(() => emptyForm(lang))
+  const [initialForm, setInitialForm] = useState(() => emptyForm(lang))
   const [error, setError] = useState('')
   const [aiError, setAiError] = useState('')
   const [aiLoading, setAiLoading] = useState({})
@@ -84,6 +83,8 @@ export default function RecipeForm() {
           ...recipe,
           time: String(recipe.time),
           servings: String(recipe.servings),
+          ingredients: recipe.ingredients.map(v => makeItem(v)),
+          steps: recipe.steps.map(v => makeItem(v)),
         }
         setForm(loaded)
         setInitialForm(loaded)
@@ -91,7 +92,7 @@ export default function RecipeForm() {
     }
   }, [id, isEditing, getRecipe])
 
-  const hasChanges = JSON.stringify(form) !== JSON.stringify(initialForm)
+  const hasChanges = !formEquals(form, initialForm)
 
   function aiErrKey(err) {
     const type = err?.aiType
@@ -114,8 +115,8 @@ export default function RecipeForm() {
         category: recipe.category ?? f.category,
         time: recipe.time != null ? String(recipe.time) : f.time,
         servings: recipe.servings != null ? String(recipe.servings) : f.servings,
-        ingredients: recipe.ingredients?.length ? recipe.ingredients : f.ingredients,
-        steps: recipe.steps?.length ? recipe.steps : f.steps,
+        ingredients: recipe.ingredients?.length ? recipe.ingredients.map(v => makeItem(v)) : f.ingredients,
+        steps: recipe.steps?.length ? recipe.steps.map(v => makeItem(v)) : f.steps,
       }))
     } catch (err) { setAiError(t(lang, aiErrKey(err))) }
     finally { setGenerateLoading(false) }
@@ -145,13 +146,13 @@ export default function RecipeForm() {
   function setListItem(field, index, value) {
     setForm(f => {
       const arr = [...f[field]]
-      arr[index] = value
+      arr[index] = { ...arr[index], value }
       return { ...f, [field]: arr }
     })
   }
 
   function addListItem(field) {
-    setForm(f => ({ ...f, [field]: [...f[field], ''] }))
+    setForm(f => ({ ...f, [field]: [...f[field], makeItem()] }))
   }
 
   function removeListItem(field, index) {
@@ -168,8 +169,8 @@ export default function RecipeForm() {
     if (!form.servings || isNaN(Number(form.servings)) || Number(form.servings) <= 0)
       return setError(t(lang, 'errorServings'))
 
-    const cleanIngredients = form.ingredients.filter(i => i.trim())
-    const cleanSteps = form.steps.filter(s => s.trim())
+    const cleanIngredients = form.ingredients.map(i => i.value).filter(v => v.trim())
+    const cleanSteps = form.steps.map(s => s.value).filter(v => v.trim())
     if (cleanIngredients.length === 0) return setError(t(lang, 'errorIngredients'))
     if (cleanSteps.length === 0) return setError(t(lang, 'errorSteps'))
 
@@ -301,17 +302,17 @@ export default function RecipeForm() {
           <label className={labelClass}>{t(lang, 'labelIngredients')}</label>
           <div className="space-y-2">
             {form.ingredients.map((item, i) => (
-              <div key={i} className="flex items-center gap-2">
+              <div key={item.id} className="flex items-center gap-2">
                 <input
                   type="text"
                   placeholder={`Ingredient ${i + 1}`}
-                  value={item}
+                  value={item.value}
                   onChange={e => setListItem('ingredients', i, e.target.value)}
                   className={inputClass}
                 />
                 <SparkleButton
                   loading={!!aiLoading[`ing-${i}`]}
-                  onClick={() => fixWithAI(`ing-${i}`, item, 'ingredient')}
+                  onClick={() => fixWithAI(`ing-${i}`, item.value, 'ingredient')}
                   title={t(lang, 'fixWithAI')}
                 />
                 {form.ingredients.length > 1 && (
@@ -341,20 +342,20 @@ export default function RecipeForm() {
           <label className={labelClass}>{t(lang, 'labelInstructions')}</label>
           <div className="space-y-2">
             {form.steps.map((step, i) => (
-              <div key={i} className="flex items-start gap-3">
+              <div key={step.id} className="flex items-start gap-3">
                 <span className="shrink-0 w-6 h-6 rounded-full bg-[#e85d04] text-white text-xs font-bold flex items-center justify-center mt-2.5">
                   {i + 1}
                 </span>
                 <textarea
                   placeholder={`Step ${i + 1}`}
-                  value={step}
+                  value={step.value}
                   onChange={e => setListItem('steps', i, e.target.value)}
                   rows={2}
                   className={`${inputClass} resize-none flex-1`}
                 />
                 <SparkleButton
                   loading={!!aiLoading[`step-${i}`]}
-                  onClick={() => fixWithAI(`step-${i}`, step, 'step')}
+                  onClick={() => fixWithAI(`step-${i}`, step.value, 'step')}
                   title={t(lang, 'fixWithAI')}
                 />
                 {form.steps.length > 1 && (

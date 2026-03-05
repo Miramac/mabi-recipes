@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { AI_MODEL, AI_API_VERSION } from '../../../../lib/aiConfig'
 
 const PROMPTS = {
   description: 'Fix spelling, grammar and improve the style of this recipe description:',
@@ -14,11 +15,11 @@ export async function POST(request) {
     method: 'POST',
     headers: {
       'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
+      'anthropic-version': AI_API_VERSION,
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
+      model: AI_MODEL,
       max_tokens: 256,
       system: `You are a helpful cooking assistant. Fix spelling, grammar and improve clarity. Return ONLY the corrected text, no explanation, no quotes, no extra formatting.${langInstruction}`,
       messages: [{ role: 'user', content: `${PROMPTS[type]}\n\n${text}` }],

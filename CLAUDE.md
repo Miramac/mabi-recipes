@@ -33,6 +33,8 @@ lib/
   seeds.js               # 6 seed recipes (inserted on first run)
   i18n.js                # t(lang, key, ...args) helper — EN + DE strings
   ai.js                  # Client-side helpers: improveText(), generateRecipe()
+  aiConfig.js            # Shared AI constants: AI_MODEL, AI_API_VERSION
+  utils.jsx              # Shared UI helpers: categoryColors, formatTime, BackIcon
 test/
   i18n.test.js           # Unit tests for t() and CATEGORY_KEYS
   ai.test.js             # Unit tests for improveText() and generateRecipe() (fetch mocked)
@@ -68,6 +70,7 @@ NEXT_PUBLIC_DEFAULT_LANG=en           # Baked at build time — default UI langu
 - Checked ingredients/steps persist in sessionStorage (reset on tab close)
 - `npm run dev` to start dev server (port 3000)
 - `npm test` runs Vitest (32 tests in `test/`)
+- New features must be developed on a dedicated feature branch (e.g. `feature/my-feature`)
 - Back button in `RecipeForm`: edit mode → `/recipe/[id]`, add mode → `/`
 - `remove()` in `db.js` is a soft delete — stamps `deletedAt`; records are never hard-deleted
 
