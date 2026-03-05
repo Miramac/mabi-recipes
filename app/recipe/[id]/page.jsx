@@ -119,7 +119,7 @@ export default function DetailPage() {
           }
         </div>
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push('/')}
           className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-sm hover:bg-white transition-colors"
           aria-label="Go back"
         >
