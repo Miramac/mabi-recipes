@@ -17,7 +17,7 @@ export default function RecipeCard({ recipe, lang }) {
   const timeLabel = formatTime(recipe.time)
   return (
     <Link
-      href={`/recipe/${recipe.id}`}
+      href={`/recipes/${recipe.id}`}
       className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-stone-100"
     >
       <div className="aspect-[4/3] overflow-hidden bg-stone-100">

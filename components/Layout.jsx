@@ -51,7 +51,7 @@ export default function Layout({ children }) {
             {t(lang, 'allRecipes')}
           </Link>
           <Link
-            href="/add"
+            href="/recipes/add"
             className="flex items-center gap-1.5 bg-[#e85d04] hover:bg-[#d04e00] text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
@@ -101,7 +101,7 @@ export default function Layout({ children }) {
             <HomeIcon />
             <span>{t(lang, 'navRecipes')}</span>
           </Link>
-          <Link href="/add" className={navLinkClass('/add')}>
+          <Link href="/recipes/add" className={navLinkClass('/recipes/add')}>
             <div className="bg-[#e85d04] rounded-full p-2 -mt-6 shadow-lg ring-4 ring-[#fafaf9]">
               <PlusIcon />
             </div>

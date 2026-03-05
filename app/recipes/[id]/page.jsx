@@ -118,7 +118,7 @@ export default function DetailPage() {
           {user && (
             <div className="flex items-center gap-2 shrink-0">
               <Link
-                href={`/edit/${recipe.id}`}
+                href={`/recipes/${recipe.id}/edit`}
                 className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-full transition-colors"
               >
                 <EditIcon />

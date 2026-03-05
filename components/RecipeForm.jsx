@@ -190,10 +190,10 @@ export default function RecipeForm() {
 
     if (isEditing) {
       await updateRecipe(id, data)
-      router.push(`/recipe/${id}`)
+      router.push(`/recipes/${id}`)
     } else {
       const newId = await addRecipe(data)
-      router.push(`/recipe/${newId}`)
+      router.push(`/recipes/${newId}`)
     }
   }
 
@@ -205,7 +205,7 @@ export default function RecipeForm() {
       <div className="flex items-center gap-3 mb-6">
         <button
           type="button"
-          onClick={() => isEditing ? router.push(`/recipe/${id}`) : router.push('/')}
+          onClick={() => isEditing ? router.push(`/recipes/${id}`) : router.push('/')}
           className="p-2 rounded-full hover:bg-stone-100 transition-colors"
           aria-label="Go back"
         >
