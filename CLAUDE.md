@@ -29,19 +29,24 @@ contexts/
   LangContext.jsx        # useLang() — lang state + setLang
   RecipesContext.jsx     # useRecipes() — recipes CRUD via fetch
 lib/
-  db.js                  # better-sqlite3 CRUD: getAll, getById, insert, update, remove
+  db.js                  # better-sqlite3 CRUD: getAll, getById, insert, update, remove (soft delete)
   seeds.js               # 6 seed recipes (inserted on first run)
   i18n.js                # t(lang, key, ...args) helper — EN + DE strings
   ai.js                  # Client-side helpers: improveText(), generateRecipe()
+test/
+  i18n.test.js           # Unit tests for t() and CATEGORY_KEYS
+  ai.test.js             # Unit tests for improveText() and generateRecipe() (fetch mocked)
+  db.test.js             # Unit tests for CRUD + soft delete (better-sqlite3 mocked)
 ```
 
 ## Data model
 ```js
-{ id, title, description, image, category, time (min), servings, ingredients[], steps[], lang, createdAt }
+{ id, title, description, image, category, time (min), servings, ingredients[], steps[], lang, createdAt, deletedAt }
 ```
 - `ingredients` and `steps` are plain string arrays — do not change to objects
 - Categories: `Breakfast | Lunch | Dinner | Dessert | Snack`
 - `lang`: `'en'` or `'de'` — stored per recipe
+- `deletedAt`: nullable INTEGER timestamp — soft delete; `null` means active
 
 ## AI service
 - Client helpers in `lib/ai.js` call `/api/ai/improve` and `/api/ai/generate`
@@ -62,6 +67,9 @@ NEXT_PUBLIC_DEFAULT_LANG=en           # Baked at build time — default UI langu
 - SQLite file at `.sqlite/recipes.db` (dir created at startup; ignored by git)
 - Checked ingredients/steps persist in sessionStorage (reset on tab close)
 - `npm run dev` to start dev server (port 3000)
+- `npm test` runs Vitest (32 tests in `test/`)
+- Back button in `RecipeForm`: edit mode → `/recipe/[id]`, add mode → `/`
+- `remove()` in `db.js` is a soft delete — stamps `deletedAt`; records are never hard-deleted
 
 ## Docker
 - `Dockerfile`: multi-stage (builder on `node:20-alpine` + runner on `node:20-alpine`)
