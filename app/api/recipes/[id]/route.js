@@ -17,7 +17,7 @@ export async function PUT(request, { params }) {
   const { id } = await params
   if (!getById(id)) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   const data = await request.json()
-  update(id, data)
+  update(id, { ...data, updatedAt: Date.now(), updatedBy: session.user.name })
   return NextResponse.json(getById(id))
 }
 

@@ -146,6 +146,14 @@ export default function DetailPage() {
           </span>
         </div>
 
+        {(recipe.createdBy || recipe.updatedBy) && (
+          <p className="text-xs text-stone-400 mb-4">
+            {recipe.updatedBy
+              ? t(lang, 'updatedBy', recipe.updatedBy, new Date(recipe.updatedAt).toLocaleDateString())
+              : t(lang, 'createdBy', recipe.createdBy)}
+          </p>
+        )}
+
         <p className="text-stone-600 leading-relaxed mb-8">{recipe.description}</p>
 
         <section className="mb-8">
