@@ -198,7 +198,7 @@ export default function RecipeForm() {
       <div className="flex items-center gap-3 mb-6">
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => isEditing ? router.push(`/recipe/${id}`) : router.push('/')}
           className="p-2 rounded-full hover:bg-stone-100 transition-colors"
           aria-label="Go back"
         >
