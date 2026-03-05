@@ -7,6 +7,7 @@ import { t, CATEGORY_KEYS } from '../../../lib/i18n'
 import { categoryColors, formatTime, BackIcon } from '../../../lib/utils'
 import { useLang } from '../../../contexts/LangContext'
 import { useRecipes } from '../../../contexts/RecipesContext'
+import { useAuth } from '../../../contexts/AuthContext'
 
 function EditIcon() {
   return (
@@ -38,6 +39,7 @@ export default function DetailPage() {
   const router = useRouter()
   const { lang } = useLang()
   const { getRecipe, deleteRecipe, loading } = useRecipes()
+  const { user } = useAuth()
   const recipe = getRecipe(id)
 
   const [checkedIngredients, setCheckedIngredients] = useState(() => {
@@ -113,21 +115,23 @@ export default function DetailPage() {
       <div className="px-4 py-6">
         <div className="flex items-start justify-between gap-4 mb-4">
           <h1 className="text-2xl font-bold text-stone-800 leading-tight">{recipe.title}</h1>
-          <div className="flex items-center gap-2 shrink-0">
-            <Link
-              href={`/edit/${recipe.id}`}
-              className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-full transition-colors"
-            >
-              <EditIcon />
-              {t(lang, 'edit')}
-            </Link>
-            <button
-              onClick={handleDelete}
-              className="flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full transition-colors"
-            >
-              <TrashIcon />
-            </button>
-          </div>
+          {user && (
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href={`/edit/${recipe.id}`}
+                className="flex items-center gap-1.5 text-sm font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-full transition-colors"
+              >
+                <EditIcon />
+                {t(lang, 'edit')}
+              </Link>
+              <button
+                onClick={handleDelete}
+                className="flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full transition-colors"
+              >
+                <TrashIcon />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">
@@ -141,6 +145,14 @@ export default function DetailPage() {
             🍽 {recipe.servings} {t(lang, 'servings')}
           </span>
         </div>
+
+        {(recipe.createdBy || recipe.updatedBy) && (
+          <p className="text-xs text-stone-400 mb-4">
+            {recipe.updatedBy
+              ? t(lang, 'updatedBy', recipe.updatedBy, new Date(recipe.updatedAt).toLocaleDateString())
+              : t(lang, 'createdBy', recipe.createdBy)}
+          </p>
+        )}
 
         <p className="text-stone-600 leading-relaxed mb-8">{recipe.description}</p>
 

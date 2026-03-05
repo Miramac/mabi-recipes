@@ -8,10 +8,12 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "migrate": "npx auth@latest migrate"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.1",
+    "better-auth": "^1.5.3",
     "better-sqlite3": "^12.6.2",
     "next": "^16.1.6",
     "react": "^19.0.0",
