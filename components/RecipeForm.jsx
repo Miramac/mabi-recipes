@@ -7,6 +7,7 @@ import { t, CATEGORY_KEYS } from '../lib/i18n'
 import { BackIcon } from '../lib/utils'
 import { useLang } from '../contexts/LangContext'
 import { useRecipes } from '../contexts/RecipesContext'
+import { useAuth } from '../contexts/AuthContext'
 
 const CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack']
 
@@ -62,11 +63,16 @@ function formEquals(a, b) {
 
 export default function RecipeForm() {
   const { lang } = useLang()
+  const { user, authLoading } = useAuth()
   const { addRecipe, updateRecipe, getRecipe } = useRecipes()
   const params = useParams()
   const router = useRouter()
   const id = params?.id
   const isEditing = Boolean(id)
+
+  useEffect(() => {
+    if (!authLoading && !user) router.replace('/login')
+  }, [authLoading, user, router])
 
   const [form, setForm] = useState(() => emptyForm(lang))
   const [initialForm, setInitialForm] = useState(() => emptyForm(lang))

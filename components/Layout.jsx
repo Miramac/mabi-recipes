@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useLang } from '../contexts/LangContext'
+import { useAuth } from '../contexts/AuthContext'
 import { t } from '../lib/i18n'
 
 function HomeIcon() {
@@ -24,6 +25,7 @@ function PlusIcon() {
 
 export default function Layout({ children }) {
   const { lang, setLang } = useLang()
+  const { user, signOut } = useAuth()
   const pathname = usePathname()
 
   const navLinkClass = (href, exact = false) => {
@@ -57,6 +59,26 @@ export default function Layout({ children }) {
             </svg>
             {t(lang, 'addRecipe')}
           </Link>
+          {user ? (
+            <>
+              <span className="text-sm text-stone-500">{user.name}</span>
+              <button
+                onClick={() => signOut()}
+                className="text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors"
+              >
+                {t(lang, 'logoutButton')}
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors">
+                {t(lang, 'loginTitle')}
+              </Link>
+              <Link href="/register" className="text-sm font-medium text-stone-500 hover:text-stone-800 transition-colors">
+                {t(lang, 'registerTitle')}
+              </Link>
+            </>
+          )}
           <button
             onClick={() => setLang(lang === 'en' ? 'de' : 'en')}
             className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-full border border-stone-200 text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors"
