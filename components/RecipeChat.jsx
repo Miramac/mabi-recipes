@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import Markdown from 'react-markdown'
 import { useLang } from '../contexts/LangContext'
 import { useRecipes } from '../contexts/RecipesContext'
 import { t } from '../lib/i18n'
@@ -110,12 +111,23 @@ export default function RecipeChat() {
             )}
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap ${
+                <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm ${
                   msg.role === 'user'
                     ? 'bg-[#e85d04] text-white rounded-br-sm'
                     : 'bg-stone-100 text-stone-800 rounded-bl-sm'
                 }`}>
-                  {msg.content}
+                  {msg.role === 'user' ? msg.content : (
+                    <Markdown components={{
+                      p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
+                      strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                      ul: ({ children }) => <ul className="list-disc pl-4 my-1 space-y-0.5">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal pl-4 my-1 space-y-0.5">{children}</ol>,
+                      li: ({ children }) => <li>{children}</li>,
+                      code: ({ children }) => <code className="bg-stone-200 px-1 rounded text-xs">{children}</code>,
+                    }}>
+                      {msg.content}
+                    </Markdown>
+                  )}
                 </div>
               </div>
             ))}
