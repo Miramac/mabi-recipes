@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { useLang } from '../contexts/LangContext'
 import { useRecipes } from '../contexts/RecipesContext'
 import { t } from '../lib/i18n'
@@ -31,8 +32,12 @@ function SendIcon() {
 
 export default function RecipeChat() {
   const { lang } = useLang()
-  const { recipes } = useRecipes()
+  const { recipes, getRecipe } = useRecipes()
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
+
+  const recipeIdMatch = pathname?.match(/^\/recipes\/([^/]+)$/)
+  const currentRecipe = recipeIdMatch ? getRecipe(recipeIdMatch[1]) : null
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -61,7 +66,7 @@ export default function RecipeChat() {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: nextMessages, recipes, lang }),
+        body: JSON.stringify({ messages: nextMessages, recipes, currentRecipe, lang }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -90,7 +95,12 @@ export default function RecipeChat() {
           {/* Header */}
           <div className="px-4 py-3 border-b border-stone-100 flex items-center gap-2">
             <span className="text-lg">🍳</span>
-            <span className="text-sm font-semibold text-stone-800">{t(lang, 'chatTitle')}</span>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-stone-800">{t(lang, 'chatTitle')}</span>
+              {currentRecipe && (
+                <span className="text-xs text-[#e85d04] truncate max-w-56">{currentRecipe.title}</span>
+              )}
+            </div>
           </div>
 
           {/* Messages */}

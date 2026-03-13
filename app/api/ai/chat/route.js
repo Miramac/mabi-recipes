@@ -2,17 +2,26 @@ import { NextResponse } from 'next/server'
 import { AI_MODEL, AI_API_VERSION } from '../../../../lib/aiConfig'
 
 export async function POST(request) {
-  const { messages, recipes = [], lang = 'en' } = await request.json()
+  const { messages, recipes = [], currentRecipe = null, lang = 'en' } = await request.json()
 
   const langInstruction = lang === 'de'
     ? ' Always respond in German.'
     : ' Always respond in English.'
 
+  const currentRecipeSection = currentRecipe
+    ? `The user is currently viewing this recipe — treat it as the primary context:\n\nTitle: ${currentRecipe.title}\nCategory: ${currentRecipe.category}\nTime: ${currentRecipe.time} min\nServings: ${currentRecipe.servings}\nDescription: ${currentRecipe.description || '—'}\nIngredients:\n${currentRecipe.ingredients.map(i => `  - ${i}`).join('\n')}\nSteps:\n${currentRecipe.steps.map((s, i) => `  ${i + 1}. ${s}`).join('\n')}\n\n`
+    : ''
+
   const recipeList = recipes
-    .map(r => `- ${r.title} (${r.category}, ${r.time} min, ${r.servings} servings): ${r.description || ''}`)
+    .filter(r => !currentRecipe || r.id !== currentRecipe.id)
+    .map(r => `- ${r.title} (${r.category}, ${r.time} min)`)
     .join('\n')
 
-  const systemPrompt = `You are a helpful cooking assistant for Mabi Recipes. You know the following recipes:\n\n${recipeList}\n\nHelp users with cooking questions, suggest recipes from the list, answer questions about ingredients or preparation, and give cooking tips.${langInstruction} Keep answers concise.`
+  const otherRecipesSection = recipeList
+    ? `Other available recipes:\n${recipeList}\n\n`
+    : ''
+
+  const systemPrompt = `You are a helpful cooking assistant for Mabi Recipes. ${currentRecipeSection}${otherRecipesSection}Help users with cooking questions, answer questions about ingredients or preparation, suggest substitutions, and give cooking tips.${langInstruction} Keep answers concise.`
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
