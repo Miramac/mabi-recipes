@@ -21,7 +21,7 @@ export async function POST(request) {
     ? `Other available recipes:\n${recipeList}\n\n`
     : ''
 
-  const systemPrompt = `You are a helpful cooking assistant for Mabi Recipes. ${currentRecipeSection}${otherRecipesSection}Help users with cooking questions, answer questions about ingredients or preparation, suggest substitutions, and give cooking tips.${langInstruction} Keep answers concise.`
+  const systemPrompt = `You are a helpful cooking assistant for Mabi Recipes. ${currentRecipeSection}${otherRecipesSection}Help users with cooking questions, answer questions about ingredients or preparation, suggest substitutions, and give cooking tips.${langInstruction} Keep answers concise. Do not use markdown formatting — no asterisks, no bold, no bullet dashes, just plain text.`
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
