@@ -14,6 +14,8 @@ export default function RegisterPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -23,6 +25,10 @@ export default function RegisterPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    if (password !== passwordConfirm) {
+      setError(t(lang, 'errorPasswordMismatch'))
+      return
+    }
     setLoading(true)
     try {
       await signUp(name, email, password)
@@ -63,11 +69,31 @@ export default function RegisterPage() {
           />
         </div>
         <div>
-          <label className={labelClass}>{t(lang, 'labelPassword')}</label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-sm font-medium text-stone-700">{t(lang, 'labelPassword')}</label>
+            <button
+              type="button"
+              onClick={() => setShowPassword(v => !v)}
+              className="text-xs text-[#e85d04] hover:underline"
+            >
+              {showPassword ? t(lang, 'hidePassword') : t(lang, 'showPassword')}
+            </button>
+          </div>
           <input
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={e => setPassword(e.target.value)}
+            className={inputClass}
+            required
+            autoComplete="new-password"
+          />
+        </div>
+        <div>
+          <label className={labelClass}>{t(lang, 'labelPasswordConfirm')}</label>
+          <input
+            type={showPassword ? 'text' : 'password'}
+            value={passwordConfirm}
+            onChange={e => setPasswordConfirm(e.target.value)}
             className={inputClass}
             required
             autoComplete="new-password"
