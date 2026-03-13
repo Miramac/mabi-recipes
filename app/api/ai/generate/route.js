@@ -2,13 +2,16 @@ import { NextResponse } from 'next/server'
 import { AI_MODEL, AI_API_VERSION } from '../../../../lib/aiConfig'
 
 export async function POST(request) {
-  const { title, lang = 'en', existingIngredients = [] } = await request.json()
+  const { title, lang = 'en', existingIngredients = [], description = '' } = await request.json()
   const langInstruction = lang === 'de'
     ? ' Write all recipe content (title, description, ingredients, steps) in German.'
     : ''
   const filledIngredients = existingIngredients.filter(i => i.trim())
   const ingredientsHint = filledIngredients.length
     ? `\nThe user already has these ingredients: ${filledIngredients.join(', ')}. Incorporate them if it makes sense.`
+    : ''
+  const descriptionHint = description.trim()
+    ? `\nThe user describes the dish as: "${description.trim()}". Use this as inspiration for the recipe.`
     : ''
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -20,11 +23,11 @@ export async function POST(request) {
     },
     body: JSON.stringify({
       model: AI_MODEL,
-      max_tokens: 1024,
+      max_tokens: 2048,
       system: `You are a helpful cooking assistant. Return ONLY valid JSON, no markdown, no explanation.${langInstruction}`,
       messages: [{
         role: 'user',
-        content: `Generate a complete recipe for "${title}".${ingredientsHint}\nReturn JSON with exactly these keys:\n{"title":"...","description":"...","category":"Breakfast|Lunch|Dinner|Dessert|Snack","time":30,"servings":4,"ingredients":["..."],"steps":["..."]}`,
+        content: `Generate a complete recipe for "${title}".${ingredientsHint}${descriptionHint}\nReturn JSON with exactly these keys:\n{"title":"...","description":"...","category":"Breakfast|Lunch|Dinner|Dessert|Snack","time":30,"servings":4,"ingredients":["..."],"steps":["..."]}`,
       }],
     }),
   })
