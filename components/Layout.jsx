@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useLang } from '../contexts/LangContext'
 import { useAuth } from '../contexts/AuthContext'
 import { t } from '../lib/i18n'
+import RecipeChat from './RecipeChat'
 
 function HomeIcon() {
   return (
@@ -93,6 +94,8 @@ export default function Layout({ children }) {
       <main className="flex-1 pb-20 md:pb-0">
         {children}
       </main>
+
+      <RecipeChat />
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-stone-100 z-10">
