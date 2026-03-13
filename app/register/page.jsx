@@ -28,7 +28,7 @@ export default function RegisterPage() {
       await signUp(name, email, password)
       router.push('/')
     } catch (err) {
-      setError(err.message)
+      setError(err.message === 'USERNAME_TAKEN' ? t(lang, 'errorUsernameTaken') : err.message)
     } finally {
       setLoading(false)
     }

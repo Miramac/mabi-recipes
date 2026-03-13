@@ -11,7 +11,7 @@ export default function LoginPage() {
   const router = useRouter()
   const { signIn } = useAuth()
   const { lang } = useLang()
-  const [email, setEmail] = useState('')
+  const [emailOrUsername, setEmailOrUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -24,7 +24,7 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      await signIn(email, password)
+      await signIn(emailOrUsername, password)
       router.push('/')
     } catch (err) {
       setError(err.message)
@@ -38,14 +38,14 @@ export default function LoginPage() {
       <h1 className="text-2xl font-bold text-stone-800 mb-8">{t(lang, 'loginTitle')}</h1>
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className={labelClass}>{t(lang, 'labelEmail')}</label>
+          <label className={labelClass}>{t(lang, 'labelEmailOrUsername')}</label>
           <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
+            type="text"
+            value={emailOrUsername}
+            onChange={e => setEmailOrUsername(e.target.value)}
             className={inputClass}
             required
-            autoComplete="email"
+            autoComplete="username"
           />
         </div>
         <div>
